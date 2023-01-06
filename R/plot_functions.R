@@ -35,7 +35,7 @@
 #' @param index_group2 A character string, used as the index of \code{group2} in
 #'    the legends. If NULL (default), \code{group2} is used.
 #'
-#' @return
+#' @return Plot of the required posterior distribution.
 #' @export
 #'
 #' @examples
@@ -91,8 +91,8 @@ plot_posterior = function(
   CI = quantile(db, prob= c( (1 - prob_CI)/2, (1 + prob_CI)/2 ) )
 
   ## Format the dataset for the subsequent plot
-  db_plot = tibble(x = dens$x, y = dens$y) %>%
-    mutate(quant = factor(findInterval(x, CI)))
+  db_plot = tibble::tibble(x = dens$x, y = dens$y) %>%
+    dplyr::mutate(quant = factor(findInterval(x, CI)))
 
   ## Define the name of index for the label of group1
   if(index_group1 %>% is.null()){
@@ -103,42 +103,56 @@ plot_posterior = function(
     index_group2 = group2
   }
 
-  gg = ggplot(db_plot) +
-    geom_ribbon(aes(x = x, y = y, ymin=0, ymax=y, fill = quant)) +
-    ylab('Density') +
-    scale_fill_manual(values=c("#F8B9C5", "#AFC0E3", "#F8B9C5")) +
-    theme_classic() +
-    theme(legend.position="none")
+  gg = ggplot2::ggplot(db_plot) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(x = x, y = y, ymin=0, ymax=y, fill = quant)
+      ) +
+    ggplot2::ylab('Density') +
+    ggplot2::scale_fill_manual(values=c("#F8B9C5", "#AFC0E3", "#F8B9C5")) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(legend.position="none")
 
   if(mean_bar){
-    gg = gg + geom_vline(xintercept = bar, color = 'red')
+    gg = gg + ggplot2::geom_vline(xintercept = bar, color = 'red')
   }
 
   if(group2 %>% is.null()){
     ## Add the adequate label for the x-axis
-    gg = gg + xlab( bquote(mu[.(index_group1)]) )
+    gg = gg + ggplot2::xlab( bquote(mu[.(index_group1)]) )
   } else {
-    ## Add the adequate label for the x-axis
-    gg = gg + xlab( bquote(mu[.(index_group1)] - mu[.(index_group2)]) )
-
-    ## Add probabilities of the group comparison if required
-    if( show_prob == TRUE ){
+      ## Add the adequate label for the x-axis
+      gg = gg + ggplot2::xlab(bquote(mu[.(index_group1)] - mu[.(index_group2)]))
+      ## Add probabilities of the group comparison if required
+     if( show_prob == TRUE ){
       p_inf = (sum(db<0)/length(db)) %>% round(2) %>% as.character()
       p_sup = (sum(db>0)/length(db)) %>% round(2) %>% as.character()
       exp_l = bquote(P(mu[.(index_group1)] <= mu[.(index_group2)]) == .(p_inf))
       exp_r = bquote(P(mu[.(index_group1)] >= mu[.(index_group2)]) == .(p_sup))
 
-      gg = gg + geom_label(data = tibble(bar = bar), aes(
-        x = bar,
-        y = Inf,
-        label = deparse(exp_l)
-      ), parse = T, size = 4, hjust=1, vjust=1) +
-        geom_label(data = tibble(bar = bar), aes(
-          x = bar,
-          y = Inf,
-          label = deparse(exp_r)
-        ), parse = T, size = 4, hjust=0, vjust=1)
-    }
+      gg = gg +
+        ggplot2::geom_label(
+          data = tibble::tibble(bar = bar),
+          ggplot2::aes(
+           x = bar,
+            y = Inf,
+            label = deparse(exp_l)
+            ),
+          parse = T,
+          size = 4,
+          hjust=1,
+          vjust=1) +
+          ggplot2::geom_label(
+            data = tibble::tibble(bar = bar),
+            ggplot2::aes(
+              x = bar,
+              y = Inf,
+              label = deparse(exp_r)
+            ),
+            parse = T,
+            size = 4,
+            hjust=0,
+            vjust=1)
+      }
     }
   return(gg)
 }
