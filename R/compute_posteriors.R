@@ -1,4 +1,20 @@
 
+#' Title
+#'
+#' @param data A tibble or data frame containing imputed data sets for all
+#'    groups. Required columns: \code{Peptide}, \code{Output}, \code{Group},
+#'    \code{Draw}.
+#' @param mu_0 A vector, corresponding to the prior mean.
+#' @param lambda_0 A number, corresponding to the prior covariance scaling
+#'    parameter.
+#' @param Sigma_0 A matrix, corresponding to the prior covariance parameter.
+#' @param nu_0 A number, corresponding to the prior degrees of freedom.
+#'
+#' @return A vector providing the empirical posterior distribution for the
+#'    means of the desired groups.
+#' @export
+#'
+#' @examples
 post_mean_diff = function(
     data,
     mu_0,
@@ -6,14 +22,6 @@ post_mean_diff = function(
     Sigma_0,
     nu_0
 ){
-  ## data: A tibble or data frame containing imputed data sets for all groups.
-  ##  Required columns: ID, Output, Group, Draw
-  ## mu_0: A vector, corresponding to the prior mean
-  ## lamba_0: A number, corresponding to the prior covariance scaling parameter
-  ## Sigma_0: A matrix, corresponding to the prior covariance parameter
-  ## nu_0: A number, corresponding to the prior degrees of freedom
-  ## return: A vector providing the empirical posterior distribution of the
-  ##   mean's difference between the desired groups.
   t1 = Sys.time()
   ## Loop over the groups
   floop_k = function(k){
@@ -27,10 +35,10 @@ post_mean_diff = function(
     list_mat = lapply(list_draw, floop_d, k = k)
 
     ((1/n_draw) * Reduce('+', list_mat)) %>%
-      `colnames<-`(data$ID %>% unique()) %>%
+      `colnames<-`(data$Peptide %>% unique()) %>%
       as_tibble() %>%
-      pivot_longer(everything(), names_to = 'ID', values_to = 'Mean') %>%
-      arrange(ID) %>%
+      pivot_longer(everything(), names_to = 'Peptide', values_to = 'Mean') %>%
+      arrange(Peptide) %>%
       mutate(Group = k) %>%
       return()
   }
@@ -48,7 +56,7 @@ post_mean_diff = function(
 
     ## Compute the mean 1/N sum_1^N{y_n}
     mean_yn_k = data_k_d %>%
-      group_by(ID) %>%
+      group_by(Peptide) %>%
       summarise(Output = mean(Output)) %>%
       pull(Output)
 
@@ -80,13 +88,28 @@ post_mean_diff = function(
   }
 
   ## Collect all the different groups
-  list_group = data$Group %>% unique()
-
-  lapply(list_group, floop_k) %>%
+  data$Group %>%
+    unique() %>%
+    lapply(floop_k) %>%
     bind_rows() %>%
     return()
 }
 
+#' Title
+#'
+#' @param data A tibble or data frame containing imputed data sets for all
+#'   groups. Required columns: Peptide, Output, Group, Draw
+#' @param mu_0 A vector, corresponding to the prior mean.
+#' @param lambda_0 A number, corresponding to the prior covariance scaling
+#'   parameter.
+#' @param beta_0 A matrix, corresponding to the prior covariance parameter.
+#' @param alpha_0 A number, corresponding to the prior degrees of freedom.
+#'
+#' @return A vector providing the empirical posterior distribution of the
+##   mean's difference between the desired groups.
+#' @export
+#'
+#' @examples
 post_mean_diff_uni = function(
     data,
     mu_0,
@@ -94,26 +117,18 @@ post_mean_diff_uni = function(
     beta_0,
     alpha_0
 ){
-  ## data: A tibble or data frame containing imputed data sets for all groups.
-  ##  Required columns: ID, Output, Group, Draw
-  ## mu_0: A vector, corresponding to the prior mean
-  ## lamba_0: A number, corresponding to the prior covariance scaling parameter
-  ## beta_0: A matrix, corresponding to the prior covariance parameter
-  ## alpha_0: A number, corresponding to the prior degrees of freedom
-  ## return: A vector providing the empirical posterior distribution of the
-  ##   mean's difference between the desired groups.
   t1 = Sys.time()
-  ## Loop over the ID
+  ## Loop over the Peptide
   floop_i = function(i){
     t2 = Sys.time()
-    paste0('ID: ', i, ' - Time : ', t2 - t1) %>% print()
+    paste0('Peptide: ', i, ' - Time : ', t2 - t1) %>% print()
 
     ## Collect all the different groups
     list_group = data$Group %>% unique()
 
     lapply(list_group, floop_k, i = i) %>%
       bind_rows() %>%
-      mutate(ID = i, .before = 'Mean') %>%
+      mutate(Peptide = i, .before = 'Mean') %>%
       return()
   }
 
@@ -121,7 +136,7 @@ post_mean_diff_uni = function(
   floop_k = function(k, i){
     ## Extract the adequate group
     data_k = data %>%
-      filter(ID == i) %>%
+      filter(Peptide == i) %>%
       filter(Group == k)
 
     ## Extract the number of samples
@@ -131,7 +146,7 @@ post_mean_diff_uni = function(
 
     ## Compute the mean 1/N sum_1^N{y_n}
     mean_yn_k = data_k %>%
-      group_by(ID) %>%
+      group_by(Peptide) %>%
       summarise(Output = mean(Output)) %>%
       pull(Output)
 
@@ -156,15 +171,15 @@ post_mean_diff_uni = function(
 
     tibble(
       'Group' = k,
-      'Mean' = mu_N + sqrt(beta_N/(lambda_N*alpha_N)) * rt(n=10000, df=2*alpha_N)
+      'Mean' = mu_N + sqrt(beta_N/(lambda_N*alpha_N))*rt(n=10000, df=2*alpha_N)
     )%>%
       return()
   }
 
   ## Collect all the different groups
-  list_ID = data$ID %>% unique()
-
-  lapply(list_ID, floop_i) %>%
+  data$Peptide %>%
+    unique() %>%
+    lapply(list_Peptide, floop_i) %>%
     bind_rows() %>%
     return()
 }
