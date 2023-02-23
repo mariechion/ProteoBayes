@@ -53,6 +53,9 @@ the legends. If NULL (default), \code{group1} is used.}
 \item{index_group2}{A character string, used as the index of \code{group2} in
 the legends. If NULL (default), \code{group2} is used.}
 }
+\value{
+Plot of the required posterior distribution.
+}
 \description{
 Display the posterior distribution of the difference of means between two
 groups for a specific peptide. If only one group is provide, the function

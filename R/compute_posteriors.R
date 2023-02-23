@@ -1,4 +1,3 @@
-
 #' Title
 #'
 #' @param data A tibble or data frame containing imputed data sets for all
@@ -15,6 +14,7 @@
 #' @export
 #'
 #' @examples
+#' TRUE
 post_mean_diff = function(
     data,
     mu_0,
@@ -110,6 +110,7 @@ post_mean_diff = function(
 #' @export
 #'
 #' @examples
+#' TRUE
 post_mean_diff_uni = function(
     data,
     mu_0,

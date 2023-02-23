@@ -2,4 +2,6 @@
 
 export("%>%")
 export(plot_posterior)
+export(post_mean_diff)
+export(post_mean_diff_uni)
 importFrom(magrittr,"%>%")
