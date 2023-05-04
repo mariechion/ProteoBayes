@@ -1,4 +1,4 @@
-#' Plot the difference of means' posterior distribution
+#' Plot the posterior distribution of the difference of means
 #'
 #' Display the posterior distribution of the difference of means between two
 #' groups for a specific peptide. If only one group is provide, the function
@@ -7,9 +7,9 @@
 #' help inference regarding the difference between groups (reference at 0 on the
 #' x-axis, probability of \code{group1} > \code{group2} and conversely).
 #'
-#' @param post_distrib A data frame, typically coming from a post_mean_*()
+#' @param post_distrib A data frame, typically coming from the sample_distrib()
 #'    function, containing the following columns: \code{Peptide}, \code{Group}
-#'    and \code{Mean}. This argument should contain the empirical posterior
+#'    and \code{Sample}. This argument should contain the empirical posterior
 #'    distributions to be displayed.
 #' @param group1 A character string, corresponding to the name of the group
 #'    for which we plot the posterior distribution of the mean. If \code{group2}
@@ -40,7 +40,7 @@
 #'
 #' @examples
 #' TRUE
-plot_posterior = function(
+plot_distrib = function(
     post_distrib,
     group1,
     group2 = NULL,
@@ -66,7 +66,7 @@ plot_posterior = function(
     db = post_distrib %>%
       dplyr::filter(.data$Peptide %in% peptide) %>%
       dplyr::filter(.data$Group == group1) %>%
-      dplyr::pull(Mean)
+      dplyr::pull(.data$Sample)
 
     ## Compte the mean of the distribution to display as a vertical bar
     bar = mean(db)
@@ -77,7 +77,7 @@ plot_posterior = function(
       db2 = post_distrib %>%
         dplyr::filter(.data$Peptide %in% peptide) %>%
         dplyr::filter(.data$Group == group2) %>%
-        dplyr::pull(.data$Mean)
+        dplyr::pull(.data$Sample)
 
       ## Redefine reference distribution as the difference of group1 and group2
       db = db - db2
