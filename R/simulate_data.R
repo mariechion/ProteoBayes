@@ -9,7 +9,7 @@
 #' @param nb_group An integer, indicating the number of groups/conditions.
 #' @param nb_sample  An integer, indicating the number of samples in the data
 #'   for each peptide (i.e the repetitions of the same experiment).
-#' @param multi_imput A boolean, indicating whether multiple imputations have
+#' @param multi_imp A boolean, indicating whether multiple imputations have
 #'   been applied to obtain the dataset.
 #' @param nb_draw A number, indicating the number of imputation procedures
 #'   applied to obtain this dataset.
@@ -39,7 +39,7 @@ simu_db = function(
     nb_peptide = 5,
     nb_group = 2,
     nb_sample = 5,
-    multi_imput = FALSE,
+    multi_imp = FALSE,
     nb_draw = 5,
     range_peptide = c(0, 50),
     diff_group = 3,
@@ -61,7 +61,7 @@ simu_db = function(
     dplyr::mutate(.data$Output = .data$Output + rnorm(1, 0, var_sample)) %>%
     dplyr::ungroup()
 
-  if(multi_imput){
+  if(multi_imp){
     db = db %>%
       tidyr::uncount(nb_draw, .id = 'Draw') %>%
       dplyr::group_by(.data$Draw) %>%
