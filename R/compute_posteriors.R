@@ -35,7 +35,7 @@ multi_posterior_mean = function(
   floop_k = function(k){
 
     ## Extract the adequate group
-    data_k = data %>% dplyr::filter(Group == k)
+    data_k = data %>% dplyr::filter(.data$Group == k)
 
     ## Collect all the different groups
     list_draw = data_k$Draw %>% unique()
@@ -153,16 +153,17 @@ posterior_mean = function(
     beta_0 = 1,
     alpha_0 = 1
 ){
-  db %>%
-    dplyr::group_by(Peptide, Group) %>%
-    dplyr::mutate(N_k = dplyr::n_distinct(Sample)) %>%
-    dplyr::mutate(SSE = sum( (Output - mean(Output))^2 ) ) %>%
+  data %>%
+    dplyr::group_by(.data$Peptide, .data$Group) %>%
+    dplyr::mutate('N_k' = dplyr::n_distinct(.data$Sample)) %>%
+    dplyr::mutate('SSE' = sum( (.data$Output - mean(.data$Output))^2 ) ) %>%
     dplyr::summarise(
-      mu = (lambda_0 * mu_0 + N_k * mean(Output)) / (lambda_0 + N_k),
-      lambda = lambda_0 + N_k,
-      alpha = alpha_0 + (N_k / 2),
-      beta = beta_0 + (0.5 * SSE) +
-        ((lambda_0 * N_k) / (2 * (lambda_0 + N_k))) * (mean(Output) - mu_0)^2
+      mu = (lambda_0*mu_0 + .data$N_k*mean(.data$Output))/(lambda_0 +.data$N_k),
+      lambda = lambda_0 + .data$N_k,
+      alpha = alpha_0 + (.data$N_k / 2),
+      beta = beta_0 + (0.5 * .data$SSE) +
+        ((lambda_0 * .data$N_k) / (2 * (lambda_0 + .data$N_k))) *
+        (mean(.data$Output) - mu_0)^2
     ) %>%
     unique() %>%
     return()
@@ -194,22 +195,25 @@ posterior_mean = function(
 #' TRUE
 sample_distrib = function(posterior, nb_sample = 1000){
 
+## Retrieve what is P ?
+
   if('Sigma' %in% names(posterior)){
     dist = posterior %>%
-      dplyr::group_by(Peptide, Group) %>%
+      dplyr::group_by(.data$Peptide, .data$Group) %>%
       dplyr::summarise('Sample' = mvtnorm::rmvt(
         n = nb_sample,
-        sigma = Sigma / ((nu - P + 1) * lambda),
-        df = nu - P + 1,
-        delta = mu)
+        sigma = .data$Sigma / ((.data$nu - .data$P + 1) * .data$lambda),
+        df = .data$nu - .data$P + 1,
+        delta = .data$mu)
         )
   }
 
   if('beta' %in% names(posterior)){
     dist = posterior %>%
-      dplyr::group_by(Peptide, Group) %>%
-      dplyr::summarise('Sample' = mu + sqrt( beta / (lambda * alpha) ) *
-                         rt(n = nb_sample, df = 2 * alpha)
+      dplyr::group_by(.data$Peptide, .data$Group) %>%
+      dplyr::summarise('Sample' = .data$mu +
+                         sqrt( .data$beta / (.data$lambda * .data$alpha) ) *
+                         stats::rt(n = nb_sample, df = 2 * .data$alpha)
       )
   }
     return(dist)

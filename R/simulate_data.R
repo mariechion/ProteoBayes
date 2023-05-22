@@ -25,6 +25,8 @@
 #' @return  A full dataset of synthetic data.
 #' @export
 #'
+#' @importFrom rlang .data
+#'
 #' @examples
 #'
 #' ## Generate a dataset with 5 peptides in each of the 2 groups, observed for
@@ -33,7 +35,7 @@
 #'
 #' ## Generate a dataset with 3 peptides in each of the 3 groups, observed for
 #' ## 4 different samples, for which 5 imputation draws are available.
-#' data = simu_db(nb_peptide = 3, nb_group = 3, nb_sample = 4; nb_draws = 5)
+#' data = simu_db(nb_peptide = 3, nb_group = 3, nb_sample = 4, nb_draw = 5)
 #'
 simu_db = function(
     nb_peptide = 5,
@@ -51,21 +53,21 @@ simu_db = function(
     'Group' = rep(rep(1:nb_group, each = nb_sample),nb_peptide),
     'Sample' = rep(rep( 1:nb_sample, nb_group*nb_peptide))
   ) %>%
-    dplyr::group_by(Peptide) %>%
-    dplyr::mutate(.data$Output = runif(1,
-                                       range_peptide[1],
-                                       range_peptide[2])) %>%
+    dplyr::group_by(.data$Peptide) %>%
+    dplyr::mutate('Output' = stats::runif(1,
+                                          range_peptide[1],
+                                          range_peptide[2])) %>%
     dplyr::group_by(.data$Group) %>%
-    dplyr::mutate(.data$Output = .data$Output + diff_group * .data$Group) %>%
+    dplyr::mutate('Output' = .data$Output + diff_group * .data$Group) %>%
     dplyr::group_by(.data$Sample) %>%
-    dplyr::mutate(.data$Output = .data$Output + rnorm(1, 0, var_sample)) %>%
+    dplyr::mutate('Output' = .data$Output + stats::rnorm(1, 0, var_sample)) %>%
     dplyr::ungroup()
 
   if(multi_imp){
     db = db %>%
       tidyr::uncount(nb_draw, .id = 'Draw') %>%
       dplyr::group_by(.data$Draw) %>%
-      dplyr::mutate(.data$Output = .data$Output + rnorm(1, 0, var_draw)) %>%
+      dplyr::mutate('Output' = .data$Output + stats::rnorm(1, 0, var_draw)) %>%
       dplyr::ungroup()
   }
     db %>% return()

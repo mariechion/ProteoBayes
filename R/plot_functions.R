@@ -85,14 +85,14 @@ plot_distrib = function(
       }
 
   ## Create a density from the dataset
-  dens <- density(db, n = 5000)
+  dens <- stats::density(db, n = 5000)
 
   ## Compute the Credible Interval with the appropriate probability level
-  CI = quantile(db, prob= c( (1 - prob_CI)/2, (1 + prob_CI)/2 ) )
+  CI = stats::quantile(db, prob= c( (1 - prob_CI)/2, (1 + prob_CI)/2 ) )
 
   ## Format the dataset for the subsequent plot
-  db_plot = tibble::tibble(x = dens$x, y = dens$y) %>%
-    dplyr::mutate(quant = factor(findInterval(x, CI)))
+  db_plot = tibble::tibble('x' = dens$x, 'y' = dens$y) %>%
+    dplyr::mutate('quant' = factor(findInterval(.data$x, CI)))
 
   ## Define the name of index for the label of group1
   if(index_group1 %>% is.null()){
@@ -105,7 +105,11 @@ plot_distrib = function(
 
   gg = ggplot2::ggplot(db_plot) +
     ggplot2::geom_ribbon(
-      ggplot2::aes(x = x, y = y, ymin=0, ymax=y, fill = quant)
+      ggplot2::aes(x = .data$x,
+                   y = .data$y,
+                   ymin=0,
+                   ymax=.data$y,
+                   fill = .data$quant)
       ) +
     ggplot2::ylab('Density') +
     ggplot2::scale_fill_manual(values=c("#F8B9C5", "#AFC0E3", "#F8B9C5")) +
