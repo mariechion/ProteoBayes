@@ -2,7 +2,7 @@
 % Please edit documentation in R/compute_posteriors.R
 \name{multi_posterior_mean}
 \alias{multi_posterior_mean}
-\title{Mulivariate posterior distribution of the means}
+\title{Multivariate posterior distribution of the means}
 \usage{
 multi_posterior_mean(data, mu_0 = 0, lambda_0 = 1, Sigma_0 = NULL, nu_0 = 10)
 }

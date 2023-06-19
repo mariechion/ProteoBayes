@@ -1,4 +1,4 @@
-#' Mulivariate posterior distribution of the means
+#' Multivariate posterior distribution of the means
 #'
 #' Compute the multivariate posterior distribution of the means
 #' between multiple groups, for multiple correlated peptides. The function
@@ -47,38 +47,39 @@ multi_posterior_mean = function(
     ((1/n_draw) * Reduce('+', list_mat)) %>%
       `colnames<-`(data$Peptide %>% unique()) %>%
       tibble::as_tibble() %>%
-      tidyr::pivot_longer(everything(), names_to = 'Peptide', values_to ='Mean') %>%
-      dplyr::arrange(Peptide) %>%
-      dplyr::mutate(Group = k) %>%
+      tidyr::pivot_longer(tidyr::everything(),
+                          names_to = 'Peptide',
+                          values_to ='Mean') %>%
+      dplyr::arrange(.data$Peptide) %>%
+      dplyr::mutate("Group" = k) %>%
       return()
   }
 
   ## Loop over the draws
   floop_d = function(d, k){
     t2 = Sys.time()
-    paste0('Group n°',k , ' - Draw n° ', d, ' - ', t2 - t1) %>% print()
+    paste0('Group: ',k , ' - Draw: ', d, ' - ', t2 - t1) %>% print()
 
     ## Extract the adequate draws
     data_k_d = data %>%
-      dplyr::filter(Group == k,  Draw == d)
+      dplyr::filter(.data$Group == k,  .data$Draw == d)
 
-    N_k = data_k_d$Draw %>% dplyr::n_distinct()
-
-    list_draw = data_k_d$Draw %>% unique()
+    N_k = data_k_d$Sample %>% dplyr::n_distinct()
+    list_sample = data_k_d$Sample %>% unique()
 
     ## Compute the mean 1/N sum_1^N{y_n}
     mean_yn_k = data_k_d %>%
-      dplyr::group_by(Peptide) %>%
-      dplyr::summarise(Output = mean(Output)) %>%
-      dplyr::pull(Output)
+      dplyr::group_by(.data$Peptide) %>%
+      dplyr::summarise("Output" = mean(.data$Output)) %>%
+      dplyr::pull(.data$Output)
 
     ##Compute the mean 1/N sum_1^N{(y_n - \bar{y_n}^)2}
     cov_yn = 0
-    for(n in list_draw)
+    for(n in list_sample)
     {
       yn_k = data_k_d %>%
-        dplyr::filter(Draw == n) %>%
-        dplyr::pull(Output)
+        dplyr::filter(.data$Sample == n) %>%
+        dplyr::pull(.data$Output)
 
       centred_y = (yn_k - mean_yn_k)
 
@@ -102,22 +103,21 @@ multi_posterior_mean = function(
 
     P = length(mu_0) # dimension of the vectors and matrices
 
-    ## Draw from the adequate T-distribution
-    # mvtnorm::rmvt(n = n_samples,
-    #      sigma = Sigma_N / ((nu_N - P + 1) * lambda_N),
-    #      df = nu_N - P + 1,
-    #      delta = mu_N) %>%
-    #   return()
+    # Draw from the adequate T-distribution
+    mvtnorm::rmvt(n = 100000,
+         sigma = Sigma_N / ((nu_N - P + 1) * lambda_N),
+         df = nu_N - P + 1,
+         delta = mu_N) %>%
+      return()
 
-    tibble::tibble(
-      'mu' = mu_N,
-      'lambda_N' = lambda_N,
-      'Sigma' = Sigma_N,
-      'nu' = nu_N
-    ) %>% return()
+    # tibble::tibble(
+    #   'mu' = mu_N,
+    #   'lambda_N' = lambda_N,
+    #   'Sigma' = Sigma_N,
+    #   'nu' = nu_N
+    # ) %>% return()
 
   }
-
   ## Collect all the different groups
   data$Group %>%
     unique() %>%
@@ -125,6 +125,30 @@ multi_posterior_mean = function(
     dplyr::bind_rows() %>%
     return()
 }
+
+test_multi = function(
+    data,
+    mu_0 = 0,
+    lambda_0 = 1,
+    Sigma_0 = NULL,
+    nu_0 = 10
+){
+  data %>%
+    dplyr::group_by(.data$Peptide, .data$Group) %>%
+    dplyr::mutate('N_k' = dplyr::n_distinct(.data$Sample)) %>%
+    dplyr::mutate('SSE' = sum( (.data$Output - mean(.data$Output))^2 ) ) %>%
+    dplyr::summarise(
+      mu = (lambda_0*mu_0 + .data$N_k*mean(.data$Output))/(lambda_0 +.data$N_k),
+      lambda = lambda_0 + .data$N_k,
+      alpha = alpha_0 + (.data$N_k / 2),
+      beta = beta_0 + (0.5 * .data$SSE) +
+        ((lambda_0 * .data$N_k) / (2 * (lambda_0 + .data$N_k))) *
+        (mean(.data$Output) - mu_0)^2
+    ) %>%
+    unique() %>%
+    return()
+}
+
 
 #' Posterior distribution of the means
 #'
@@ -218,4 +242,3 @@ sample_distrib = function(posterior, nb_sample = 1000){
   }
     return(dist)
 }
-
