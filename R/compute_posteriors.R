@@ -43,14 +43,15 @@ multi_posterior_mean = function(
     n_draw = data_k$Draw %>% dplyr::n_distinct()
 
     list_mat = lapply(list_draw, floop_d, k = k)
-
-    ((1/n_draw) * Reduce('+', list_mat)) %>%
-      `colnames<-`(data$Peptide %>% unique()) %>%
-      tibble::as_tibble() %>%
-      tidyr::pivot_longer(tidyr::everything(),
-                          names_to = 'Peptide',
-                          values_to ='Mean') %>%
-      dplyr::arrange(.data$Peptide) %>%
+    # ((1/n_draw) * Reduce('+', list_mat)) %>%
+    #   `colnames<-`(data$Peptide %>% unique()) %>%
+    #   tibble::as_tibble() %>%
+    #   tidyr::pivot_longer(tidyr::everything(),
+    #                       names_to = 'Peptide',
+    #                       values_to ='Mean') %>%
+    #   dplyr::arrange(.data$Peptide) %>%
+      list_mat %>%
+        bind_rows %>%
       dplyr::mutate("Group" = k) %>%
       return()
   }
@@ -104,18 +105,19 @@ multi_posterior_mean = function(
     P = length(mu_0) # dimension of the vectors and matrices
 
     # Draw from the adequate T-distribution
-    mvtnorm::rmvt(n = 100000,
-         sigma = Sigma_N / ((nu_N - P + 1) * lambda_N),
-         df = nu_N - P + 1,
-         delta = mu_N) %>%
-      return()
+    # mvtnorm::rmvt(n = 1000,
+    #      sigma = Sigma_N / ((nu_N - P + 1) * lambda_N),
+    #      df = nu_N - P + 1,
+    #      delta = mu_N) %>%
+    #   return()
 
-    # tibble::tibble(
-    #   'mu' = mu_N,
-    #   'lambda_N' = lambda_N,
-    #   'Sigma' = Sigma_N,
-    #   'nu' = nu_N
-    # ) %>% return()
+    tibble::tibble(
+      'mu' = mu_N,
+      'lambda_N' = lambda_N,
+      'nu' = nu_N,
+      'Sigma' = Sigma_N,
+      'Draw' = d
+    ) %>% return()
 
   }
   ## Collect all the different groups
@@ -133,20 +135,42 @@ test_multi = function(
     Sigma_0 = NULL,
     nu_0 = 10
 ){
-  data %>%
-    dplyr::group_by(.data$Peptide, .data$Group) %>%
+  #Initialiser mu_0 avec la moyenne empirique across tous les groupes
+
+fu =  bla %>%
+    dplyr::group_by(.data$Draw, .data$Group, .data$Peptide) %>%
     dplyr::mutate('N_k' = dplyr::n_distinct(.data$Sample)) %>%
-    dplyr::mutate('SSE' = sum( (.data$Output - mean(.data$Output))^2 ) ) %>%
-    dplyr::summarise(
+    dplyr::mutate('C_Output' = .data$Output - mean(.data$Output)) %>%
+    dplyr::mutate('C_Mean' = mean(.data$Output) - mu_0) %>%
+    dplyr::mutate(
       mu = (lambda_0*mu_0 + .data$N_k*mean(.data$Output))/(lambda_0 +.data$N_k),
       lambda = lambda_0 + .data$N_k,
-      alpha = alpha_0 + (.data$N_k / 2),
-      beta = beta_0 + (0.5 * .data$SSE) +
-        ((lambda_0 * .data$N_k) / (2 * (lambda_0 + .data$N_k))) *
-        (mean(.data$Output) - mu_0)^2
+      nu = nu_0 + N_k
     ) %>%
-    unique() %>%
-    return()
+    dplyr::summarise('Sample' = .data$Sample,
+                     'Sigma' = tcrossprod(.data$C_Output)) %>%
+    dplyr::arrange(.data$Draw, .data$Group, .data$Sample, .data$Peptide) %>%
+    dplyr::mutate(Sigma = Sigma %>% sum)
+
+
+# Create a data frame with matrices
+df <- stats::cars
+
+df <-  %>%
+  group_by(maker, model, year, cylinder, transmission, drive, fuel, type) %>%
+  summarise(sum_dis = sum(dis),
+            sum_city = sum(city),
+            sum_highway = sum(highway)) %>%
+  nest(data = c(sum_dis, sum_city, sum_highway)) %>%
+  mutate(sum_matrices = map(data, ~ matrix(rowSums(.x), nrow = 1))) %>%
+  unnest(sum_matrices)
+
+# Sigma = Sigma_0 + sum(tcrossprod(.data$C_Output)) +
+#   ((lambda_0 * .data$N_k) / lambda_0 + .data$N_k) *
+#   tcrossprod(.data$C_Mean)
+#
+#     distinct() %>%
+#     return()
 }
 
 
@@ -193,7 +217,6 @@ posterior_mean = function(
     return()
 }
 
-
 #' Sample from a t-distribution
 #'
 #' Sample from a (possibly multivariate) t-distribution. This function can be
@@ -219,15 +242,16 @@ posterior_mean = function(
 #' TRUE
 sample_distrib = function(posterior, nb_sample = 1000){
 
-## Retrieve what is P ?
-
   if('Sigma' %in% names(posterior)){
+
+    P = posterior$mu %>% length()
+
     dist = posterior %>%
       dplyr::group_by(.data$Peptide, .data$Group) %>%
       dplyr::summarise('Sample' = mvtnorm::rmvt(
         n = nb_sample,
-        sigma = .data$Sigma / ((.data$nu - .data$P + 1) * .data$lambda),
-        df = .data$nu - .data$P + 1,
+        sigma = .data$Sigma / ((.data$nu - P + 1) * .data$lambda),
+        df = .data$nu - P + 1,
         delta = .data$mu)
         )
   }
