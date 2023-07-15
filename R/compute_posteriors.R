@@ -15,9 +15,14 @@
 #'    parameter.
 #' @param Sigma_0 A matrix, corresponding to the prior covariance parameter.
 #' @param nu_0 A number, corresponding to the prior degrees of freedom.
+#' @param vectorised A boolean, indicating whether we should used a vectorised
+#'    version of the function. Default when nb_peptides < 30.
+#'    If nb_peptides > 30, there is a high risk that the vectorised version
+#'    would be slower.
 #'
-#' @return A vector providing the empirical multivariate posterior distribution
-#'    for the mean of the considered groups.
+#' @return A vector providing the parameters of the multivariate posterior
+#'     t-distribution for the mean of the considered groups and draws for
+#'     each peptide.
 #' @export
 #'
 #' @examples
@@ -27,10 +32,33 @@ multi_posterior_mean = function(
     mu_0 = 0,
     lambda_0 = 1,
     Sigma_0 = NULL,
-    nu_0 = 10
+    nu_0 = 10,
+    vectorised = FALSE
 ){
-  t1 = Sys.time()
+  #Initialiser mu_0 avec la moyenne empirique across tous les groupes
 
+
+  ## Extract the dimension
+  dim = data$Peptide %>% unique() %>% length()
+
+  ## If NULL, define Sigma_0 as the identity matrix
+  if(Sigma_0 %>% is.null()){
+    Sigma_0 <- diag(1, dim)
+  }
+
+  ## Use vectorised version (default if nb_peptides < 30)
+  if(vectorised){
+    return(
+      vectorised_multi(
+        data = data,
+        mu_0 = mu_0,
+        lambda_0,
+        Sigma_0 = Sigma_0,
+        nu_0 = nu_0) %>%
+      dplyr::arrange(.data$Group)
+    )
+  }
+  # t1 = Sys.time()
   ## Loop over the groups
   floop_k = function(k){
 
@@ -42,28 +70,29 @@ multi_posterior_mean = function(
 
     n_draw = data_k$Draw %>% dplyr::n_distinct()
 
-    list_mat = lapply(list_draw, floop_d, k = k)
-    # ((1/n_draw) * Reduce('+', list_mat)) %>%
-    #   `colnames<-`(data$Peptide %>% unique()) %>%
-    #   tibble::as_tibble() %>%
-    #   tidyr::pivot_longer(tidyr::everything(),
-    #                       names_to = 'Peptide',
-    #                       values_to ='Mean') %>%
-    #   dplyr::arrange(.data$Peptide) %>%
-      list_mat %>%
-        bind_rows %>%
-      dplyr::mutate("Group" = k) %>%
+    lapply(list_draw, floop_d, k = k) %>%
+      dplyr::bind_rows() %>%
+      tidyr::pivot_longer(!c('Draw', 'Peptide', 'mu', 'lambda','nu'),
+                          names_to = 'Peptide2', values_to = 'Sigma') %>%
+      dplyr::relocate(.data$Peptide2, .after = .data$Peptide) %>%
+      dplyr::mutate("Group" = k, .after = .data$Draw) %>%
       return()
   }
 
   ## Loop over the draws
   floop_d = function(d, k){
-    t2 = Sys.time()
-    paste0('Group: ',k , ' - Draw: ', d, ' - ', t2 - t1) %>% print()
+    # t2 = Sys.time()
+    # paste0('Group: ',k , ' - Draw: ', d, ' - ', t2 - t1) %>% print()
 
     ## Extract the adequate draws
     data_k_d = data %>%
-      dplyr::filter(.data$Group == k,  .data$Draw == d)
+      dplyr::filter(.data$Group == k,  .data$Draw == d) %>%
+      dplyr::arrange(.data$Peptide)
+
+    ## Extract the list of Peptide
+    list_Peptide = data_k_d %>%
+      dplyr::pull(.data$Peptide) %>%
+      unique()
 
     N_k = data_k_d$Sample %>% dplyr::n_distinct()
     list_sample = data_k_d$Sample %>% unique()
@@ -74,7 +103,7 @@ multi_posterior_mean = function(
       dplyr::summarise("Output" = mean(.data$Output)) %>%
       dplyr::pull(.data$Output)
 
-    ##Compute the mean 1/N sum_1^N{(y_n - \bar{y_n}^)2}
+    ## Compute sum_1^N{(y_n - \bar{y_n}^)2}
     cov_yn = 0
     for(n in list_sample)
     {
@@ -87,36 +116,26 @@ multi_posterior_mean = function(
       cov_yn = cov_yn + tcrossprod(centred_y)
     }
 
-    if(Sigma_0 %>% is.null()){
-      Sigma_0 <- diag(1, length(yn_k))
-    }
-
     centred_mean = mean_yn_k - mu_0
+
     ## Compute the updated posterior hyper-parameters
-    mu_N = (lambda_0 * mu_0 + N_k * mean_yn_k) / (lambda_0 + N_k)
+    mu_N <- (lambda_0 * mu_0 + N_k * mean_yn_k) / (lambda_0 + N_k)
 
-    lambda_N = lambda_0 + N_k
+    lambda_N <- lambda_0 + N_k
 
-    Sigma_N = Sigma_0 + cov_yn +
+    nu_N <- nu_0 + N_k
+
+    Sigma_N <- Sigma_0 + cov_yn +
       ((lambda_0 * N_k) / lambda_N) * tcrossprod(centred_mean)
-
-    nu_N = nu_0 + N_k
-
-    P = length(mu_0) # dimension of the vectors and matrices
-
-    # Draw from the adequate T-distribution
-    # mvtnorm::rmvt(n = 1000,
-    #      sigma = Sigma_N / ((nu_N - P + 1) * lambda_N),
-    #      df = nu_N - P + 1,
-    #      delta = mu_N) %>%
-    #   return()
+    colnames(Sigma_N) <- list_Peptide
 
     tibble::tibble(
+      'Draw' = d,
+      'Peptide' = list_Peptide,
       'mu' = mu_N,
-      'lambda_N' = lambda_N,
+      'lambda' = lambda_N,
       'nu' = nu_N,
-      'Sigma' = Sigma_N,
-      'Draw' = d
+      Sigma_N %>% tibble::as_tibble()
     ) %>% return()
 
   }
@@ -128,51 +147,87 @@ multi_posterior_mean = function(
     return()
 }
 
-test_multi = function(
+#' Vectorised version of multi_posterior_mean()
+#'
+#' Alternative vectorised version, highly efficient when nb_peptide < 30.
+#'
+#' @param data A tibble or data frame containing imputed data sets for all
+#'    groups. Required columns: \code{Peptide}, \code{Group}, \code{Sample},
+#'    \code{Output}. If missing data have been estimated from multiple
+#'    imputations, each imputation should be identified in an optional
+#'    \code{Draw} column.
+#' @param mu_0 A vector, corresponding to the prior mean.
+#' @param lambda_0 A number, corresponding to the prior covariance scaling
+#'    parameter.
+#' @param Sigma_0 A matrix, corresponding to the prior covariance parameter.
+#' @param nu_0 A number, corresponding to the prior degrees of freedom.
+#'
+#' @return A vector providing the parameters of the posterior t-distribution for
+#'    the mean of the considered groups for each peptide.
+#'
+#' @examples
+#' TRUE
+vectorised_multi = function(
     data,
     mu_0 = 0,
     lambda_0 = 1,
     Sigma_0 = NULL,
     nu_0 = 10
 ){
-  #Initialiser mu_0 avec la moyenne empirique across tous les groupes
+  ## Create a vectorised version of the Sigma_0 matrix
+  db_Sigma_0 <- Sigma_0 %>%
+    `colnames<-`(unique(data$Peptide)) %>%
+    `rownames<-`(unique(data$Peptide)) %>%
+    tibble::as_tibble(rownames = 'Peptide') %>%
+    tidyr::pivot_longer(- 'Peptide',
+                        names_to = 'Peptide2',
+                        values_to = 'Sigma_0')
 
-fu =  bla %>%
+  ## Compute the centred vectors and centred means across all Samples
+  mat <- data %>%
+    dplyr::group_by(.data$Draw, .data$Group, .data$Peptide) %>%
+    dplyr::mutate('C_Output' = .data$Output - mean(.data$Output)) %>%
+    dplyr::mutate('C_Mean' = mean(.data$Output) - mu_0)
+
+  ## Compute the univariate posterior parameters
+  post <- mat %>%
     dplyr::group_by(.data$Draw, .data$Group, .data$Peptide) %>%
     dplyr::mutate('N_k' = dplyr::n_distinct(.data$Sample)) %>%
     dplyr::mutate('C_Output' = .data$Output - mean(.data$Output)) %>%
     dplyr::mutate('C_Mean' = mean(.data$Output) - mu_0) %>%
-    dplyr::mutate(
-      mu = (lambda_0*mu_0 + .data$N_k*mean(.data$Output))/(lambda_0 +.data$N_k),
-      lambda = lambda_0 + .data$N_k,
-      nu = nu_0 + N_k
+    dplyr::reframe(
+      'mu' = (lambda_0*mu_0+.data$N_k*mean(.data$Output))/(lambda_0 +.data$N_k),
+      'lambda' = lambda_0 + .data$N_k,
+      'nu' = nu_0 + .data$N_k,
+      .data$N_k
     ) %>%
-    dplyr::summarise('Sample' = .data$Sample,
-                     'Sigma' = tcrossprod(.data$C_Output)) %>%
-    dplyr::arrange(.data$Draw, .data$Group, .data$Sample, .data$Peptide) %>%
-    dplyr::mutate(Sigma = Sigma %>% sum)
+    dplyr::distinct()
 
-
-# Create a data frame with matrices
-df <- stats::cars
-
-df <-  %>%
-  group_by(maker, model, year, cylinder, transmission, drive, fuel, type) %>%
-  summarise(sum_dis = sum(dis),
-            sum_city = sum(city),
-            sum_highway = sum(highway)) %>%
-  nest(data = c(sum_dis, sum_city, sum_highway)) %>%
-  mutate(sum_matrices = map(data, ~ matrix(rowSums(.x), nrow = 1))) %>%
-  unnest(sum_matrices)
-
-# Sigma = Sigma_0 + sum(tcrossprod(.data$C_Output)) +
-#   ((lambda_0 * .data$N_k) / lambda_0 + .data$N_k) *
-#   tcrossprod(.data$C_Mean)
-#
-#     distinct() %>%
-#     return()
+  ## Compute the posterior matrix parameter Sigma_N and bind with the others
+  mat %>%
+    tidyr::expand_grid('Peptide2' = unique(.data$Peptide)) %>%
+    dplyr::left_join(
+      mat %>%
+        dplyr::select(- 'Output') %>%
+        dplyr::rename('Peptide2' = .data$Peptide,
+                      'C_Output2' = .data$C_Output,
+                      'C_Mean2' = .data$C_Mean),
+      by = c("Group", "Sample", "Draw", "Peptide2")) %>%
+    dplyr::mutate('C_i' = .data$C_Output * .data$C_Output2,
+                  'C_0' = .data$C_Mean * .data$C_Mean2) %>%
+    dplyr::group_by(.data$Draw, .data$Group, .data$Peptide, .data$Peptide2) %>%
+    dplyr::reframe('C_i' = sum(.data$C_i),
+                   'C_0' = mean(.data$C_0)
+                  ) %>%
+    dplyr::left_join(db_Sigma_0, by = c("Peptide", "Peptide2")) %>%
+    dplyr::left_join(post, by = c("Draw", "Group", "Peptide")) %>%
+    dplyr::reframe(.data$Draw, .data$Group, .data$Peptide, .data$Peptide2,
+                   .data$mu, .data$lambda, .data$nu,
+                   'Sigma' = .data$Sigma_0 + .data$C_i +
+                       ((.data$N_k * lambda_0) / .data$lambda) * .data$C_0,
+                     ) %>%
+    return()
 }
-
 
 #' Posterior distribution of the means
 #'
@@ -201,19 +256,21 @@ posterior_mean = function(
     beta_0 = 1,
     alpha_0 = 1
 ){
-  data %>%
+ data %>%
     dplyr::group_by(.data$Peptide, .data$Group) %>%
-    dplyr::mutate('N_k' = dplyr::n_distinct(.data$Sample)) %>%
-    dplyr::mutate('SSE' = sum( (.data$Output - mean(.data$Output))^2 ) ) %>%
-    dplyr::summarise(
-      mu = (lambda_0*mu_0 + .data$N_k*mean(.data$Output))/(lambda_0 +.data$N_k),
+    dplyr::reframe('N_k' = dplyr::n_distinct(.data$Sample),
+                   'mean_output' = mean(.data$Output),
+                   'SSE' = sum( (.data$Output - .data$mean_output)^2 ) ) %>%
+    dplyr::reframe(
+      .data$Peptide,
+      .data$Group,
+      mu = (lambda_0*mu_0 + .data$N_k*.data$mean_output)/(lambda_0 +.data$N_k),
       lambda = lambda_0 + .data$N_k,
       alpha = alpha_0 + (.data$N_k / 2),
       beta = beta_0 + (0.5 * .data$SSE) +
         ((lambda_0 * .data$N_k) / (2 * (lambda_0 + .data$N_k))) *
-        (mean(.data$Output) - mu_0)^2
+        (.data$mean_output - mu_0)^2
     ) %>%
-    unique() %>%
     return()
 }
 
@@ -242,27 +299,54 @@ posterior_mean = function(
 #' TRUE
 sample_distrib = function(posterior, nb_sample = 1000){
 
-  if('Sigma' %in% names(posterior)){
+  if('nu' %in% names(posterior)){
 
-    P = posterior$mu %>% length()
+    ## Extract the dimension
+    P = posterior$Peptide %>% unique() %>% length()
+
+    ## Throw an error if nu < P - 1
+    if(min(posterior$nu) < P - 1){
+      stop("The 'nu' parameter is too small compared to the number of Peptides",
+      " (nu < P - 1). Consider changing prior value for 'nu' or decreasing",
+      " the number of Peptides.")
+    }
 
     dist = posterior %>%
-      dplyr::group_by(.data$Peptide, .data$Group) %>%
-      dplyr::summarise('Sample' = mvtnorm::rmvt(
-        n = nb_sample,
-        sigma = .data$Sigma / ((.data$nu - P + 1) * .data$lambda),
-        df = .data$nu - P + 1,
-        delta = .data$mu)
-        )
+      dplyr::mutate(
+        'df' = .data$nu - P + 1,
+        'Sigma' = .data$Sigma) %>%
+      dplyr::group_by(.data$Draw, .data$Group) %>%
+      dplyr::reframe(
+        mvtnorm::rmvt(
+          n = nb_sample,
+          sigma = matrix(.data$Sigma, ncol = P, nrow = P),
+          df = unique(.data$df),
+          delta = unique(.data$mu)
+        ) %>%
+          `colnames<-`(unique(.data$Peptide)) %>%
+          tibble::as_tibble(),
+        'ID_sample' = 1:nb_sample
+      ) %>%
+      tidyr::pivot_longer(!c('Draw', 'Group', 'ID_sample'),
+                          names_to = 'Peptide',
+                          values_to = 'Sample') %>%
+      dplyr::group_by(.data$Peptide, .data$Group, .data$ID_sample) %>%
+      dplyr::reframe('Sample' = mean(.data$Sample)) %>%
+      dplyr::select(- .data$ID_sample)
   }
 
   if('beta' %in% names(posterior)){
     dist = posterior %>%
-      dplyr::group_by(.data$Peptide, .data$Group) %>%
-      dplyr::summarise('Sample' = .data$mu +
-                         sqrt( .data$beta / (.data$lambda * .data$alpha) ) *
-                         stats::rt(n = nb_sample, df = 2 * .data$alpha)
+      dplyr::mutate('mu' = .data$mu +
+                      sqrt( .data$beta / (.data$lambda * .data$alpha)),
+                    'alpha' =  2 * .data$alpha) %>%
+      tidyr::uncount(nb_sample) %>%
+      dplyr::reframe(
+        .data$Peptide,
+        .data$Group,
+        'Sample' = .data$mu * stats::rt(n = dplyr::n(), df =.data$alpha)
       )
   }
-    return(dist)
+
+  return(dist)
 }

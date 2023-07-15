@@ -59,16 +59,15 @@ simu_db = function(
                                           range_peptide[2])) %>%
     dplyr::group_by(.data$Group) %>%
     dplyr::mutate('Output' = .data$Output + diff_group * .data$Group) %>%
-    dplyr::group_by(.data$Sample) %>%
-    dplyr::mutate('Output' = .data$Output + stats::rnorm(1, 0, var_sample)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      'Output' = .data$Output + stats::rnorm(dplyr::n(), 0, var_sample))
 
   if(multi_imp){
     db = db %>%
       tidyr::uncount(nb_draw, .id = 'Draw') %>%
-      dplyr::group_by(.data$Draw) %>%
-      dplyr::mutate('Output' = .data$Output + stats::rnorm(1, 0, var_draw)) %>%
-      dplyr::ungroup()
+      dplyr::mutate(
+        'Output' = .data$Output + stats::rnorm(dplyr::n(), 0, var_draw))
   }
     db %>% return()
 }

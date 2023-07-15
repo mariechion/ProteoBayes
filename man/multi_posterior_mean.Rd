@@ -4,7 +4,14 @@
 \alias{multi_posterior_mean}
 \title{Multivariate posterior distribution of the means}
 \usage{
-multi_posterior_mean(data, mu_0 = 0, lambda_0 = 1, Sigma_0 = NULL, nu_0 = 10)
+multi_posterior_mean(
+  data,
+  mu_0 = 0,
+  lambda_0 = 1,
+  Sigma_0 = NULL,
+  nu_0 = 10,
+  vectorised = FALSE
+)
 }
 \arguments{
 \item{data}{A tibble or data frame containing imputed data sets for all
@@ -21,10 +28,16 @@ parameter.}
 \item{Sigma_0}{A matrix, corresponding to the prior covariance parameter.}
 
 \item{nu_0}{A number, corresponding to the prior degrees of freedom.}
+
+\item{vectorised}{A boolean, indicating whether we should used a vectorised
+version of the function. Default when nb_peptides < 30.
+If nb_peptides > 30, there is a high risk that the vectorised version
+would be slower.}
 }
 \value{
-A vector providing the empirical multivariate posterior distribution
-for the mean of the considered groups.
+A vector providing the parameters of the multivariate posterior
+t-distribution for the mean of the considered groups and draws for
+each peptide.
 }
 \description{
 Compute the multivariate posterior distribution of the means
