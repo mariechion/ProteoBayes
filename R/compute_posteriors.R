@@ -110,8 +110,8 @@ multi_posterior_mean = function(
     ## Compute the mean 1/N sum_1^N{y_n}
     mean_yn_k = data_k_d %>%
       dplyr::group_by(.data$Peptide) %>%
-      dplyr::summarise("C_Output" = mean(.data$Output),
-                       "mu_0" = unique(.data$mu_0))
+      dplyr::reframe("C_Output" = mean(.data$Output),
+                     "mu_0" = unique(.data$mu_0))
 
 
     ## Compute sum_1^N{(y_n - \bar{y_n}^)2}
@@ -128,7 +128,7 @@ multi_posterior_mean = function(
     }
 
     centred_mean = mean_yn_k %>%
-      dplyr::summarise('c_mean' = .data$C_Output - .data$mu_0) %>%
+      dplyr::reframe('c_mean' = .data$C_Output - .data$mu_0) %>%
       dplyr::pull(.data$c_mean)
 
     ## Compute the updated posterior hyper-parameters
