@@ -9,7 +9,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "80%",
+  dpi = 300
 )
 ```
 
@@ -32,7 +33,7 @@ You can install the development version of ProteoBayes like so:
 
 ```{r}
 # install.packages("devtools")
-devtools::install_github("mariechion/ProteoBayes", force = TRUE)
+devtools::install_github("mariechion/ProteoBayes")
 ```
 
 
@@ -72,7 +73,7 @@ We can also consider correlations between Peptides by using a multivariate versi
 ```{r compute posteriors multi}
 post_imp = multi_posterior_mean(data_imp)
 
-post
+post_imp
 ```
 
 Once parameters of the posterior distributions are available. We can sample from those distributions and visualise the differences between any groups for each peptide by using: 

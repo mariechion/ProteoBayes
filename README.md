@@ -22,52 +22,9 @@ You can install the development version of ProteoBayes like so:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("mariechion/ProteoBayes", force = TRUE)
-#> Downloading GitHub repo mariechion/ProteoBayes@HEAD
-#> cli     (3.6.0  -> 3.6.1 ) [CRAN]
-#> utf8    (1.2.2  -> 1.2.3 ) [CRAN]
-#> Rcpp    (1.0.10 -> 1.0.11) [CRAN]
-#> mvtnorm (1.1-3  -> 1.2-2 ) [CRAN]
-#> Installing 4 packages: cli, utf8, Rcpp, mvtnorm
-#> Installing packages into 'C:/Users/user/Documents/R/win-library/4.1'
-#> (as 'lib' is unspecified)
-#> 
-#>   There are binary versions available but the source versions are later:
-#>         binary source needs_compilation
-#> Rcpp    1.0.10 1.0.11              TRUE
-#> mvtnorm  1.1-3  1.2-2              TRUE
-#> 
-#> package 'cli' successfully unpacked and MD5 sums checked
-#> Warning: cannot remove prior installation of package 'cli'
-#> Warning in file.copy(savedcopy, lib, recursive = TRUE): problem copying
-#> C:\Users\user\Documents\R\win-library\4.1\00LOCK\cli\libs\x64\cli.dll to
-#> C:\Users\user\Documents\R\win-library\4.1\cli\libs\x64\cli.dll: Permission
-#> denied
-#> Warning: restored 'cli'
-#> package 'utf8' successfully unpacked and MD5 sums checked
-#> Warning: cannot remove prior installation of package 'utf8'
-#> Warning in file.copy(savedcopy, lib, recursive = TRUE): problem copying
-#> C:\Users\user\Documents\R\win-library\4.1\00LOCK\utf8\libs\x64\utf8.dll to
-#> C:\Users\user\Documents\R\win-library\4.1\utf8\libs\x64\utf8.dll: Permission
-#> denied
-#> Warning: restored 'utf8'
-#> 
-#> The downloaded binary packages are in
-#>  C:\Users\user\AppData\Local\Temp\RtmpEVA6vw\downloaded_packages
-#> installing the source packages 'Rcpp', 'mvtnorm'
-#> Warning in i.p(...): installation of package 'Rcpp' had non-zero exit status
-#> Warning in i.p(...): installation of package 'mvtnorm' had non-zero exit status
-#> -- R CMD build -----------------------------------------------------------------
-#>          checking for file 'C:\Users\user\AppData\Local\Temp\RtmpEVA6vw\remotes41e845ad4184\mariechion-ProteoBayes-a3c7a40/DESCRIPTION' ...     checking for file 'C:\Users\user\AppData\Local\Temp\RtmpEVA6vw\remotes41e845ad4184\mariechion-ProteoBayes-a3c7a40/DESCRIPTION' ...   v  checking for file 'C:\Users\user\AppData\Local\Temp\RtmpEVA6vw\remotes41e845ad4184\mariechion-ProteoBayes-a3c7a40/DESCRIPTION' (484ms)
-#>       -  preparing 'ProteoBayes':
-#>    checking DESCRIPTION meta-information ...     checking DESCRIPTION meta-information ...   v  checking DESCRIPTION meta-information
-#>       -  checking for LF line-endings in source and make files and shell scripts
-#>   -  checking for empty or unneeded directories
-#>       -  building 'ProteoBayes_0.0.0.9000.tar.gz'
-#>      
-#> 
-#> Installing package into 'C:/Users/user/Documents/R/win-library/4.1'
-#> (as 'lib' is unspecified)
+devtools::install_github("mariechion/ProteoBayes")
+#> Skipping install of 'ProteoBayes' from a github remote, the SHA1 (1721d6f1) has not changed since last install.
+#>   Use `force = TRUE` to force installation
 ```
 
 ## ProteoBayes in a nutshell
@@ -149,31 +106,22 @@ dedicated function is:
 
 ``` r
 post_imp = multi_posterior_mean(data_imp)
-#> Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in
-#> dplyr 1.1.0.
-#> i Please use `reframe()` instead.
-#> i When switching from `summarise()` to `reframe()`, remember that `reframe()`
-#>   always returns an ungrouped data frame and adjust accordingly.
-#> i The deprecated feature was likely used in the ProteoBayes package.
-#>   Please report the issue to the authors.
-#> This warning is displayed once every 8 hours.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
 
-post
-#> # A tibble: 10 x 6
-#>    Peptide   Group    mu lambda alpha  beta
-#>    <chr>     <int> <dbl>  <dbl> <dbl> <dbl>
-#>  1 Peptide_1     1  48.8      6   3.5  6.81
-#>  2 Peptide_1     2  51.9      6   3.5 17.2 
-#>  3 Peptide_2     1  51.5      6   3.5  3.54
-#>  4 Peptide_2     2  53.5      6   3.5 10.6 
-#>  5 Peptide_3     1  18.6      6   3.5  6.61
-#>  6 Peptide_3     2  20.9      6   3.5 11.8 
-#>  7 Peptide_4     1  44.0      6   3.5  7.00
-#>  8 Peptide_4     2  46.0      6   3.5 17.8 
-#>  9 Peptide_5     1  34.0      6   3.5 30.7 
-#> 10 Peptide_5     2  37.7      6   3.5  5.40
+post_imp
+#> # A tibble: 250 x 8
+#>     Draw Group Peptide   Peptide2     mu lambda    nu  Sigma
+#>    <int> <int> <chr>     <chr>     <dbl>  <dbl> <dbl>  <dbl>
+#>  1     1     1 Peptide_1 Peptide_1  50.4      6    15 57.4  
+#>  2     1     1 Peptide_1 Peptide_2  50.4      6    15 -1.25 
+#>  3     1     1 Peptide_1 Peptide_3  50.4      6    15 11.5  
+#>  4     1     1 Peptide_1 Peptide_4  50.4      6    15 -8.05 
+#>  5     1     1 Peptide_1 Peptide_5  50.4      6    15 -3.92 
+#>  6     1     1 Peptide_2 Peptide_1  41.7      6    15 -1.25 
+#>  7     1     1 Peptide_2 Peptide_2  41.7      6    15  6.08 
+#>  8     1     1 Peptide_2 Peptide_3  41.7      6    15  2.85 
+#>  9     1     1 Peptide_2 Peptide_4  41.7      6    15 -0.206
+#> 10     1     1 Peptide_2 Peptide_5  41.7      6    15 -2.40 
+#> # i 240 more rows
 ```
 
 Once parameters of the posterior distributions are available. We can
@@ -187,7 +135,7 @@ sample = sample_distrib(post)
 plot_distrib(sample, group1 = 1, group2 = 2, peptide = 'Peptide_1' )
 ```
 
-<img src="man/figures/README-visualisation-1.png" width="100%" />
+<img src="man/figures/README-visualisation-1.png" width="80%" />
 
 When comparing a large number of Peptides simultaneously, the function
 `identify_diff()` can be used to check for probable differences between
