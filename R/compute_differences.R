@@ -30,13 +30,13 @@ identify_diff <- function(
     dplyr::reframe(
       .data$Peptide, .data$Group, .data$mu,
       'CI_inf' = extraDistr::qlst(
-        p = CI_level,
+        p = CI_level/2,
         df =.data$df,
         mu = .data$mu,
         sigma = .data$sigma,
         lower.tail = T),
       'CI_sup' =  extraDistr::qlst(
-        p = CI_level,
+        p = CI_level/2,
         df =.data$df,
         mu = .data$mu,
         sigma = .data$sigma,

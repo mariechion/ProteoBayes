@@ -48,6 +48,13 @@ multi_posterior_mean = function(
       dplyr::mutate('mu_0' = m_0)
   }
 
+
+  ## If no 'Draw' column, initialise a dummy one
+  if(!('Draw' %in% names(data))){
+    data <- data %>%
+      dplyr::mutate('Draw' = 1)
+  }
+
   ## Extract the dimension
   dim = data$Peptide %>% unique() %>% length()
 
@@ -199,6 +206,12 @@ vectorised_multi = function(
   } else {
     data <- data %>%
       dplyr::mutate('mu_0' = m_0)
+  }
+
+  ## If no 'Draw' column, initialise a dummy one
+  if(!('Draw' %in% names(data))){
+    data <- data %>%
+      dplyr::mutate('Draw' = 1)
   }
 
   ## Create a vectorised version of the Sigma_0 matrix
