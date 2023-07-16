@@ -4,7 +4,7 @@
 \alias{posterior_mean}
 \title{Posterior distribution of the means}
 \usage{
-posterior_mean(data, mu_0 = 0, lambda_0 = 1, beta_0 = 1, alpha_0 = 1)
+posterior_mean(data, mu_0 = NULL, lambda_0 = 1, beta_0 = 1, alpha_0 = 1)
 }
 \arguments{
 \item{data}{A tibble or data frame containing imputed data sets for all
@@ -21,7 +21,7 @@ parameter.}
 \item{alpha_0}{A number, corresponding to the prior degrees of freedom.}
 }
 \value{
-A vector providing the empirical posterior distribution for the
+A tibble providing the empirical posterior distribution for the
 }
 \description{
 Compute the posterior distribution of the means between multiple groups.

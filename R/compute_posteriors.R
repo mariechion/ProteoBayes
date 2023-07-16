@@ -10,17 +10,19 @@
 #'    \code{Output}. If missing data have been estimated from multiple
 #'    imputations, each imputation should be identified in an optional
 #'    \code{Draw} column.
-#' @param mu_0 A vector, corresponding to the prior mean.
+#' @param mu_0 A vector, corresponding to the prior mean. If NULL, all groups
+#'    are initialised with the same empirical mean for each peptide.
 #' @param lambda_0 A number, corresponding to the prior covariance scaling
 #'    parameter.
 #' @param Sigma_0 A matrix, corresponding to the prior covariance parameter.
+#'    If NULL, the identity matrix will be used by default.
 #' @param nu_0 A number, corresponding to the prior degrees of freedom.
 #' @param vectorised A boolean, indicating whether we should used a vectorised
 #'    version of the function. Default when nb_peptides < 30.
 #'    If nb_peptides > 30, there is a high risk that the vectorised version
 #'    would be slower.
 #'
-#' @return A vector providing the parameters of the multivariate posterior
+#' @return A tibble providing the parameters of the multivariate posterior
 #'     t-distribution for the mean of the considered groups and draws for
 #'     each peptide.
 #' @export
@@ -29,14 +31,22 @@
 #' TRUE
 multi_posterior_mean = function(
     data,
-    mu_0 = 0,
+    mu_0 = NULL,
     lambda_0 = 1,
     Sigma_0 = NULL,
     nu_0 = 10,
     vectorised = FALSE
 ){
-  #Initialiser mu_0 avec la moyenne empirique across tous les groupes
-
+  ## Initialise prior mean \mu_0 with empirical mean across all groups
+  if(mu_0 %>% is.null()){
+    data <- data %>%
+      dplyr::group_by(.data$Peptide) %>%
+      dplyr::mutate('mu_0' = mean(.data$Output)) %>%
+      dplyr::ungroup()
+  } else {
+    data <- data %>%
+      dplyr::mutate('mu_0' = m_0)
+  }
 
   ## Extract the dimension
   dim = data$Peptide %>% unique() %>% length()
@@ -100,8 +110,9 @@ multi_posterior_mean = function(
     ## Compute the mean 1/N sum_1^N{y_n}
     mean_yn_k = data_k_d %>%
       dplyr::group_by(.data$Peptide) %>%
-      dplyr::summarise("Output" = mean(.data$Output)) %>%
-      dplyr::pull(.data$Output)
+      dplyr::summarise("C_Output" = mean(.data$Output),
+                       "mu_0" = unique(.data$mu_0))
+
 
     ## Compute sum_1^N{(y_n - \bar{y_n}^)2}
     cov_yn = 0
@@ -111,15 +122,17 @@ multi_posterior_mean = function(
         dplyr::filter(.data$Sample == n) %>%
         dplyr::pull(.data$Output)
 
-      centred_y = (yn_k - mean_yn_k)
+      centred_y = (yn_k - mean_yn_k$C_Output)
 
       cov_yn = cov_yn + tcrossprod(centred_y)
     }
 
-    centred_mean = mean_yn_k - mu_0
+    centred_mean = mean_yn_k %>%
+      dplyr::summarise('c_mean' = .data$C_Output - .data$mu_0) %>%
+      dplyr::pull(.data$c_mean)
 
     ## Compute the updated posterior hyper-parameters
-    mu_N <- (lambda_0 * mu_0 + N_k * mean_yn_k) / (lambda_0 + N_k)
+    mu_N <- (lambda_0*mean_yn_k$mu_0 + N_k*mean_yn_k$C_Output)/(lambda_0 + N_k)
 
     lambda_N <- lambda_0 + N_k
 
@@ -156,24 +169,38 @@ multi_posterior_mean = function(
 #'    \code{Output}. If missing data have been estimated from multiple
 #'    imputations, each imputation should be identified in an optional
 #'    \code{Draw} column.
-#' @param mu_0 A vector, corresponding to the prior mean.
+#' @param mu_0 A vector, corresponding to the prior mean. If NULL, all groups
+#'    are initialised with the same empirical mean for each peptide.
 #' @param lambda_0 A number, corresponding to the prior covariance scaling
 #'    parameter.
 #' @param Sigma_0 A matrix, corresponding to the prior covariance parameter.
+#'    If NULL, the identity matrix will be used by default.
 #' @param nu_0 A number, corresponding to the prior degrees of freedom.
 #'
-#' @return A vector providing the parameters of the posterior t-distribution for
+#' @return A tibble providing the parameters of the posterior t-distribution for
 #'    the mean of the considered groups for each peptide.
 #'
 #' @examples
 #' TRUE
 vectorised_multi = function(
     data,
-    mu_0 = 0,
+    mu_0 = NULL,
     lambda_0 = 1,
     Sigma_0 = NULL,
     nu_0 = 10
 ){
+
+  ## Initialise prior mean \mu_0 with empirical mean across all groups
+  if(mu_0 %>% is.null()){
+    data <- data %>%
+      dplyr::group_by(.data$Peptide) %>%
+      dplyr::mutate('mu_0' = mean(.data$Output)) %>%
+      dplyr::ungroup()
+  } else {
+    data <- data %>%
+      dplyr::mutate('mu_0' = m_0)
+  }
+
   ## Create a vectorised version of the Sigma_0 matrix
   db_Sigma_0 <- Sigma_0 %>%
     `colnames<-`(unique(data$Peptide)) %>%
@@ -186,17 +213,16 @@ vectorised_multi = function(
   ## Compute the centred vectors and centred means across all Samples
   mat <- data %>%
     dplyr::group_by(.data$Draw, .data$Group, .data$Peptide) %>%
-    dplyr::mutate('C_Output' = .data$Output - mean(.data$Output)) %>%
-    dplyr::mutate('C_Mean' = mean(.data$Output) - mu_0)
+    dplyr::mutate('N_k' = dplyr::n_distinct(.data$Sample)) %>%
+    dplyr::mutate('Mean_Output' = mean(.data$Output)) %>%
+    dplyr::mutate('C_Output' = .data$Output - .data$Mean_Output) %>%
+    dplyr::mutate('C_Mean' = .data$Mean_Output - .data$mu_0)
 
   ## Compute the univariate posterior parameters
   post <- mat %>%
-    dplyr::group_by(.data$Draw, .data$Group, .data$Peptide) %>%
-    dplyr::mutate('N_k' = dplyr::n_distinct(.data$Sample)) %>%
-    dplyr::mutate('C_Output' = .data$Output - mean(.data$Output)) %>%
-    dplyr::mutate('C_Mean' = mean(.data$Output) - mu_0) %>%
     dplyr::reframe(
-      'mu' = (lambda_0*mu_0+.data$N_k*mean(.data$Output))/(lambda_0 +.data$N_k),
+      'mu' = (lambda_0 * .data$mu_0 + .data$N_k * .data$Mean_Output) /
+        (lambda_0 +.data$N_k),
       'lambda' = lambda_0 + .data$N_k,
       'nu' = nu_0 + .data$N_k,
       .data$N_k
@@ -208,7 +234,7 @@ vectorised_multi = function(
     tidyr::expand_grid('Peptide2' = unique(.data$Peptide)) %>%
     dplyr::left_join(
       mat %>%
-        dplyr::select(- 'Output') %>%
+        dplyr::select(- c('Output', 'mu_0', 'N_k', 'Mean_Output')) %>%
         dplyr::rename('Peptide2' = .data$Peptide,
                       'C_Output2' = .data$C_Output,
                       'C_Mean2' = .data$C_Mean),
@@ -243,7 +269,7 @@ vectorised_multi = function(
 #' @param beta_0 A matrix, corresponding to the prior covariance parameter.
 #' @param alpha_0 A number, corresponding to the prior degrees of freedom.
 #'
-#' @return A vector providing the empirical posterior distribution for the
+#' @return A tibble providing the empirical posterior distribution for the
 ##   mean of the considered groups.
 #' @export
 #'
@@ -251,25 +277,39 @@ vectorised_multi = function(
 #' TRUE
 posterior_mean = function(
     data,
-    mu_0 = 0,
+    mu_0 = NULL,
     lambda_0 = 1,
     beta_0 = 1,
     alpha_0 = 1
 ){
+
+  ## Initialise prior mean \mu_0 with empirical mean across all groups
+  if(mu_0 %>% is.null()){
+    data <- data %>%
+      dplyr::group_by(.data$Peptide) %>%
+      dplyr::mutate('mu_0' = mean(.data$Output)) %>%
+      dplyr::ungroup()
+  } else {
+    data <- data %>%
+      dplyr::mutate('mu_0' = m_0)
+  }
+
  data %>%
     dplyr::group_by(.data$Peptide, .data$Group) %>%
     dplyr::reframe('N_k' = dplyr::n_distinct(.data$Sample),
                    'mean_output' = mean(.data$Output),
-                   'SSE' = sum( (.data$Output - .data$mean_output)^2 ) ) %>%
+                   'C_i' = sum( (.data$Output - .data$mean_output)^2 ),
+                   'mu_0' = unique(.data$mu_0)) %>%
     dplyr::reframe(
       .data$Peptide,
       .data$Group,
-      mu = (lambda_0*mu_0 + .data$N_k*.data$mean_output)/(lambda_0 +.data$N_k),
+      mu = (lambda_0 * .data$mu_0 + .data$N_k*.data$mean_output) /
+        (lambda_0 + .data$N_k),
       lambda = lambda_0 + .data$N_k,
       alpha = alpha_0 + (.data$N_k / 2),
-      beta = beta_0 + (0.5 * .data$SSE) +
+      beta = beta_0 + (0.5 * .data$C_i) +
         ((lambda_0 * .data$N_k) / (2 * (lambda_0 + .data$N_k))) *
-        (.data$mean_output - mu_0)^2
+        (.data$mean_output - .data$mu_0)^2
     ) %>%
     return()
 }
@@ -314,7 +354,7 @@ sample_distrib = function(posterior, nb_sample = 1000){
     dist = posterior %>%
       dplyr::mutate(
         'df' = .data$nu - P + 1,
-        'Sigma' = .data$Sigma) %>%
+        'Sigma' = .data$Sigma / (.data$lambda * df) ) %>%
       dplyr::group_by(.data$Draw, .data$Group) %>%
       dplyr::reframe(
         mvtnorm::rmvt(
