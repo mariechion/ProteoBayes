@@ -6,14 +6,16 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of ProteoBayes is to …
+Bayesian toolbox for quantitative proteomics. In particular, this package provides functions to generate synthetic datasets, execute Bayesian
+differential analysis methods, and display results.
 
 ## Installation
 
 You can install the development version of ProteoBayes like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+# install.packages("devtools")
+devtools::install_github("ArthurLeroy/MagmaClustR")
 ```
 
 ## Example

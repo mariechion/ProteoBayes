@@ -18,7 +18,7 @@
 #'
 #' @examples
 #' TRUE
-identity_diff <- function(
+identify_diff <- function(
     posterior,
     CI_level = 0.05){
 

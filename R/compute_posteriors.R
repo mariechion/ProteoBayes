@@ -377,14 +377,16 @@ sample_distrib = function(posterior, nb_sample = 1000){
 
   if('beta' %in% names(posterior)){
     dist = posterior %>%
-      dplyr::mutate('mu' = .data$mu +
-                      sqrt( .data$beta / (.data$lambda * .data$alpha)),
-                    'alpha' =  2 * .data$alpha) %>%
+      dplyr::mutate('sigma' = sqrt(.data$beta/(.data$lambda * .data$alpha))) %>%
       tidyr::uncount(nb_sample) %>%
       dplyr::reframe(
         .data$Peptide,
         .data$Group,
-        'Sample' = .data$mu * stats::rt(n = dplyr::n(), df =.data$alpha)
+        'Sample' = extraDistr::rlst(
+          n = dplyr::n(),
+          df = 2 * .data$alpha,
+          mu = .data$mu,
+          sigma = .data$sigma)
       )
   }
 
