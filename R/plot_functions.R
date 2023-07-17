@@ -7,19 +7,21 @@
 #' help inference regarding the difference between groups (reference at 0 on the
 #' x-axis, probability of \code{group1} > \code{group2} and conversely).
 #'
-#' @param post_distrib A data frame, typically coming from the sample_distrib()
-#'    function, containing the following columns: \code{Peptide}, \code{Group}
-#'    and \code{Sample}. This argument should contain the empirical posterior
-#'    distributions to be displayed.
+#' @param sample_distrib A data frame, typically coming from the
+#'    \code{sample_distrib()} function, containing the following columns:
+#'    \code{Peptide}, \code{Group} and \code{Sample}. This argument should
+#'    contain the empirical posterior distributions to be displayed.
 #' @param group1 A character string, corresponding to the name of the group
-#'    for which we plot the posterior distribution of the mean. If \code{group2}
-#'    is provided, the posterior difference of the groups is displayed instead.
+#'    for which we plot the posterior distribution of the mean. If NULL
+#'    (default), the first group appearing in \code{sample_distrib} is
+#'    displayed. If \code{group2} is provided, the posterior difference of the
+#'    groups is displayed instead.
 #' @param group2 A character string, corresponding to the name of the group
 #'    we want to compare to \code{group1}. If NULL (default), only the posterior
 #'    distribution of the mean for \code{group1} is displayed.
 #' @param peptide A character string, corresponding to the name of the peptide
 #'    for which we plot the posterior distribution of the mean. If NULL
-#'    (default), all peptides contained in \code{post_distrib} are aggregated.
+#'    (default), only the first appearing in \code{sample_distrib} is displayed.
 #' @param prob_CI A number, between 0 and 1, corresponding the level of the
 #'    Credible Interval (CI), represented as side regions (in red) of the
 #'    posterior distribution. The default value (0.95) display the 95% CI,
@@ -41,8 +43,8 @@
 #' @examples
 #' TRUE
 plot_distrib = function(
-    post_distrib,
-    group1,
+    sample_distrib,
+    group1 = NULL,
     group2 = NULL,
     peptide = NULL,
     prob_CI = 0.95,
@@ -51,38 +53,46 @@ plot_distrib = function(
     index_group1 = NULL,
     index_group2 = NULL
     ){
-    ## Retrieve the name of peptides in the 'post_distrib' argument if needed
-    if(peptide %>% is.null()){
-      peptide = post_distrib$Peptide %>% unique()
-    }
 
-    ## If we have multiple values in 'peptide', warn the user
-    if(length(peptide) > 1){
-      cat("The 'peptide' argument contains multiple values. This might cause",
-          "wrong results or unexpected graphs.")
-    }
+  ## Retrieve the name of the first group in 'sample_distrib' if needed
+  if(group1 %>% is.null()){
+    group1 = sample_distrib$Group[1]
+  }
 
+  ## Retrieve the name of peptides in the 'sample_distrib' argument if needed
+  if(peptide %>% is.null()){
+    peptide = sample_distrib$Peptide %>% unique()
+  }
+
+  ## If we have multiple values in 'peptide', warn the user
+  if(length(peptide) > 1){
+    message("The 'peptide' argument contains multiple values. Only results ",
+            "from the first value will be displayed.")
+    peptide = peptide[1]
+
+  }
+
+  ## Extract the distribution of group1
+  db = sample_distrib %>%
+    dplyr::filter(.data$Peptide %in% peptide) %>%
+    dplyr::filter(.data$Group == group1) %>%
+    dplyr::pull(.data$Sample)
+
+  ## Compte the mean of the distribution to display as a vertical bar
+  bar = mean(db)
+
+  ## If group2 is provided, display the difference of posterior distributions
+  if(!is.null(group2)){
     ## Extract the distribution of group1
-    db = post_distrib %>%
+    db2 = sample_distrib %>%
       dplyr::filter(.data$Peptide %in% peptide) %>%
-      dplyr::filter(.data$Group == group1) %>%
+      dplyr::filter(.data$Group == group2) %>%
       dplyr::pull(.data$Sample)
 
-    ## Compte the mean of the distribution to display as a vertical bar
-    bar = mean(db)
-
-    ## If group2 is provided, display the difference of posterior distributions
-    if(!is.null(group2)){
-      ## Extract the distribution of group1
-      db2 = post_distrib %>%
-        dplyr::filter(.data$Peptide %in% peptide) %>%
-        dplyr::filter(.data$Group == group2) %>%
-        dplyr::pull(.data$Sample)
-
-      ## Redefine reference distribution as the difference of group1 and group2
-      db = db - db2
-      bar = 0
-      }
+    ## Redefine reference distribution as the difference of group1 and group2
+    db = db - db2
+    bar = 0
+  }
 
   ## Create a density from the dataset
   dens <- stats::density(db, n = 5000)

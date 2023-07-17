@@ -5,8 +5,8 @@
 \title{Plot the posterior distribution of the difference of means}
 \usage{
 plot_distrib(
-  post_distrib,
-  group1,
+  sample_distrib,
+  group1 = NULL,
   group2 = NULL,
   peptide = NULL,
   prob_CI = 0.95,
@@ -17,14 +17,16 @@ plot_distrib(
 )
 }
 \arguments{
-\item{post_distrib}{A data frame, typically coming from the sample_distrib()
-function, containing the following columns: \code{Peptide}, \code{Group}
-and \code{Sample}. This argument should contain the empirical posterior
-distributions to be displayed.}
+\item{sample_distrib}{A data frame, typically coming from the
+\code{sample_distrib()} function, containing the following columns:
+\code{Peptide}, \code{Group} and \code{Sample}. This argument should
+contain the empirical posterior distributions to be displayed.}
 
 \item{group1}{A character string, corresponding to the name of the group
-for which we plot the posterior distribution of the mean. If \code{group2}
-is provided, the posterior difference of the groups is displayed instead.}
+for which we plot the posterior distribution of the mean. If NULL
+(default), the first group appearing in \code{sample_distrib} is
+displayed. If \code{group2} is provided, the posterior difference of the
+groups is displayed instead.}
 
 \item{group2}{A character string, corresponding to the name of the group
 we want to compare to \code{group1}. If NULL (default), only the posterior
@@ -32,7 +34,7 @@ distribution of the mean for \code{group1} is displayed.}
 
 \item{peptide}{A character string, corresponding to the name of the peptide
 for which we plot the posterior distribution of the mean. If NULL
-(default), all peptides contained in \code{post_distrib} are aggregated.}
+(default), only the first appearing in \code{sample_distrib} is displayed.}
 
 \item{prob_CI}{A number, between 0 and 1, corresponding the level of the
 Credible Interval (CI), represented as side regions (in red) of the

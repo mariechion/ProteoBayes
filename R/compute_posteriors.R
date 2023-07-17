@@ -75,7 +75,7 @@ multi_posterior_mean = function(
       dplyr::arrange(.data$Group)
     )
   }
-  # t1 = Sys.time()
+
   ## Loop over the groups
   floop_k = function(k){
 
@@ -98,9 +98,6 @@ multi_posterior_mean = function(
 
   ## Loop over the draws
   floop_d = function(d, k){
-    # t2 = Sys.time()
-    # paste0('Group: ',k , ' - Draw: ', d, ' - ', t2 - t1) %>% print()
-
     ## Extract the adequate draws
     data_k_d = data %>%
       dplyr::filter(.data$Group == k,  .data$Draw == d) %>%
