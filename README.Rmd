@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 # ProteoBayes
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/ProteoBayes)](https://CRAN.R-project.org/package=ProteoBayes)
 <!-- badges: end -->
 
 Bayesian toolbox for quantitative proteomics. In particular, this package provides functions to generate synthetic datasets, execute Bayesian differential analysis methods, and display results.
@@ -31,7 +32,7 @@ install.packages("ProteoBayes")
 
 You can install the development version of ProteoBayes like so:
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # install.packages("devtools")
 devtools::install_github("mariechion/ProteoBayes")
 ```

@@ -4,6 +4,9 @@
 # ProteoBayes
 
 <!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/ProteoBayes)](https://CRAN.R-project.org/package=ProteoBayes)
 <!-- badges: end -->
 
 Bayesian toolbox for quantitative proteomics. In particular, this
@@ -23,8 +26,6 @@ You can install the development version of ProteoBayes like so:
 ``` r
 # install.packages("devtools")
 devtools::install_github("mariechion/ProteoBayes")
-#> Skipping install of 'ProteoBayes' from a github remote, the SHA1 (1721d6f1) has not changed since last install.
-#>   Use `force = TRUE` to force installation
 ```
 
 ## ProteoBayes in a nutshell
@@ -146,14 +147,14 @@ identify_diff(post)
 #> # A tibble: 10 x 10
 #>    Peptide   Group    mu CI_inf CI_sup Group2   mu2 CI_inf2 CI_sup2 Distinct
 #>    <chr>     <int> <dbl>  <dbl>  <dbl>  <int> <dbl>   <dbl>   <dbl> <lgl>   
-#>  1 Peptide_1     1  48.8   47.7   49.9      2  51.9    50.1    53.6 TRUE    
-#>  2 Peptide_1     2  51.9   50.1   53.6      1  48.8    47.7    49.9 TRUE    
-#>  3 Peptide_2     1  51.5   50.8   52.3      2  53.5    52.2    54.9 FALSE   
-#>  4 Peptide_2     2  53.5   52.2   54.9      1  51.5    50.8    52.3 FALSE   
-#>  5 Peptide_3     1  18.6   17.6   19.7      2  20.9    19.5    22.3 FALSE   
-#>  6 Peptide_3     2  20.9   19.5   22.3      1  18.6    17.6    19.7 FALSE   
-#>  7 Peptide_4     1  44.0   42.9   45.1      2  46.0    44.3    47.7 FALSE   
-#>  8 Peptide_4     2  46.0   44.3   47.7      1  44.0    42.9    45.1 FALSE   
-#>  9 Peptide_5     1  34.0   31.7   36.3      2  37.7    36.7    38.6 TRUE    
-#> 10 Peptide_5     2  37.7   36.7   38.6      1  34.0    31.7    36.3 TRUE
+#>  1 Peptide_1     1  48.8   47.5   50.2      2  51.9    49.7    54.0 FALSE   
+#>  2 Peptide_1     2  51.9   49.7   54.0      1  48.8    47.5    50.2 FALSE   
+#>  3 Peptide_2     1  51.5   50.6   52.5      2  53.5    51.9    55.2 FALSE   
+#>  4 Peptide_2     2  53.5   51.9   55.2      1  51.5    50.6    52.5 FALSE   
+#>  5 Peptide_3     1  18.6   17.3   20.0      2  20.9    19.1    22.7 FALSE   
+#>  6 Peptide_3     2  20.9   19.1   22.7      1  18.6    17.3    20.0 FALSE   
+#>  7 Peptide_4     1  44.0   42.6   45.4      2  46.0    43.8    48.2 FALSE   
+#>  8 Peptide_4     2  46.0   43.8   48.2      1  44.0    42.6    45.4 FALSE   
+#>  9 Peptide_5     1  34.0   31.1   36.8      2  37.7    36.5    38.9 FALSE   
+#> 10 Peptide_5     2  37.7   36.5   38.9      1  34.0    31.1    36.8 FALSE
 ```

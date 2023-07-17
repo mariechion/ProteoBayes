@@ -1,6 +1,6 @@
 Package: ProteoBayes
 Title: Bayesian Statistical Tools for Quantitative Proteomics
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     c(person("Arthur", "Leroy", , "arthur.leroy.pro@gmail.com", 
         role = c("aut", "cre"),

@@ -45,7 +45,7 @@ multi_posterior_mean = function(
       dplyr::ungroup()
   } else {
     data <- data %>%
-      dplyr::mutate('mu_0' = m_0)
+      dplyr::mutate('mu_0' = .data$m_0)
   }
 
 
@@ -205,7 +205,7 @@ vectorised_multi = function(
       dplyr::ungroup()
   } else {
     data <- data %>%
-      dplyr::mutate('mu_0' = m_0)
+      dplyr::mutate('mu_0' = .data$m_0)
   }
 
   ## If no 'Draw' column, initialise a dummy one
@@ -304,7 +304,7 @@ posterior_mean = function(
       dplyr::ungroup()
   } else {
     data <- data %>%
-      dplyr::mutate('mu_0' = m_0)
+      dplyr::mutate('mu_0' = .data$m_0)
   }
 
  data %>%
@@ -367,7 +367,7 @@ sample_distrib = function(posterior, nb_sample = 1000){
     dist = posterior %>%
       dplyr::mutate(
         'df' = .data$nu - P + 1,
-        'Sigma' = .data$Sigma / (.data$lambda * df) ) %>%
+        'Sigma' = .data$Sigma / (.data$lambda * .data$df) ) %>%
       dplyr::group_by(.data$Draw, .data$Group) %>%
       dplyr::reframe(
         mvtnorm::rmvt(
