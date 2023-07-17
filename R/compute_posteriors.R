@@ -45,7 +45,7 @@ multi_posterior_mean = function(
       dplyr::ungroup()
   } else {
     data <- data %>%
-      dplyr::mutate('mu_0' = .data$m_0)
+      dplyr::mutate('mu_0' = mu_0)
   }
 
 
@@ -205,7 +205,7 @@ vectorised_multi = function(
       dplyr::ungroup()
   } else {
     data <- data %>%
-      dplyr::mutate('mu_0' = .data$m_0)
+      dplyr::mutate('mu_0' = mu_0)
   }
 
   ## If no 'Draw' column, initialise a dummy one
@@ -304,7 +304,7 @@ posterior_mean = function(
       dplyr::ungroup()
   } else {
     data <- data %>%
-      dplyr::mutate('mu_0' = .data$m_0)
+      dplyr::mutate('mu_0' = mu_0)
   }
 
  data %>%
