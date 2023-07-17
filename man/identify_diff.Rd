@@ -4,7 +4,7 @@
 \alias{identify_diff}
 \title{Identify posterior mean differences}
 \usage{
-identify_diff(posterior, CI_level = 0.05)
+identify_diff(posterior, CI_level = 0.05, nb_samples = 1000)
 }
 \arguments{
 \item{posterior}{A tibble, typically coming from a \code{posterior_mean()}
@@ -14,6 +14,11 @@ peptide.}
 
 \item{CI_level}{A number, defining the order of quantile chosen to assess
 differences between groups.}
+
+\item{nb_samples}{A number (optional), indicating the
+number of samples to draw from the posteriors for computing mean and
+credible intervals . Only used if \code{posterior} is multivariate,
+typically coming from a \code{multi_posterior_mean()} function.}
 }
 \value{
 A tibble, indicating which peptides and groups seem to be different
