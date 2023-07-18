@@ -66,10 +66,7 @@ plot_distrib = function(
 
   ## If we have multiple values in 'peptide', warn the user
   if(length(peptide) > 1){
-    message("The 'peptide' argument contains multiple values. Only results ",
-            "from the first value will be displayed.")
     peptide = peptide[1]
-
   }
 
   ## Extract the distribution of group1
@@ -78,7 +75,7 @@ plot_distrib = function(
     dplyr::filter(.data$Group == group1) %>%
     dplyr::pull(.data$Sample)
 
-  ## Compte the mean of the distribution to display as a vertical bar
+  ## Compute the mean of the distribution to display as a vertical bar
   bar = mean(db)
 
   ## If group2 is provided, display the difference of posterior distributions
