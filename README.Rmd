@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# ProteoBayes
+# ProteoBayes <a href="https://mariechion.github.io/ProteoBayes/"><img src="man/figures/logo.png" align="right" height="139" /></a>
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/ProteoBayes)](https://CRAN.R-project.org/package=ProteoBayes)
