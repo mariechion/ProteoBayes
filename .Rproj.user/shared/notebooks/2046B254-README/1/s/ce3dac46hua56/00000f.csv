@@ -1,0 +1,5 @@
+"0","devtools::install_github(""mariechion/ProteoBayes"")
+"
+"2","Skipping install of 'ProteoBayes' from a github remote, the SHA1 (ba29cc06) has not changed since last install.
+  Use `force = TRUE` to force installation
+"

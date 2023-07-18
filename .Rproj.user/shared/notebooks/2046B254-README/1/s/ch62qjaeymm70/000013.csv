@@ -1,0 +1,11 @@
+"0","set.seed(42)
+
+## Generate a dataset without imputations
+data = simu_db()
+
+## Generate a dataset with multiple imputations
+data_imp = simu_db(multi_imp = TRUE)
+
+data
+"
+"0","data_imp"

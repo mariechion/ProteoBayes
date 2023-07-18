@@ -1,0 +1,26 @@
+{
+    "id": "710DCF48",
+    "path": "C:/Users/user/Mon Drive/Travail/GitHub/MAGMAclust/Real_data_study.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1688941423895.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "566,0",
+        "scrollLine": "549"
+    },
+    "folds": "4|35|38|0|\n6|1|14|0|\n17|1|36|0|\n39|26|185|0|\n41|1|52|0|\n55|1|66|0|\n69|1|71|0|\n74|1|87|0|\n90|1|121|0|\n125|1|183|0|\n131|22|177|2|\n154|36|168|4|\n186|17|190|0|\n191|18|267|0|\n268|15|321|0|\n322|20|467|0|\n",
+    "lastKnownWriteTime": 1688972894,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1688972946218,
+    "read_only": false,
+    "read_only_alternatives": []
+}

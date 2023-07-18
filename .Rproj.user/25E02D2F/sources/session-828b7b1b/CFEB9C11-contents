@@ -1,0 +1,97 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "80%",
+  dpi = 300
+)
+```
+
+# ProteoBayes
+
+<!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/ProteoBayes)](https://CRAN.R-project.org/package=ProteoBayes)
+<!-- badges: end -->
+
+Bayesian toolbox for quantitative proteomics. In particular, this package provides functions to generate synthetic datasets, execute Bayesian differential analysis methods, and display results.
+
+## Installation
+
+You can install the released version of ProteoBayes from CRAN with:
+
+```{r eval = FALSE}
+install.packages("ProteoBayes")
+```
+
+You can install the development version of ProteoBayes like so:
+
+```{r message=FALSE, warning=FALSE}
+# install.packages("devtools")
+devtools::install_github("mariechion/ProteoBayes")
+```
+
+
+## ProteoBayes in a nutshell
+
+Generate a synthetic proteomic dataset with the correct format:
+
+```{r simu data}
+library(ProteoBayes)
+set.seed(42)
+
+## Generate a dataset without imputations
+data = simu_db()
+
+## Generate a dataset with multiple imputations
+data_imp = simu_db(multi_imp = TRUE)
+
+data
+data_imp
+```
+
+The parameters of all posterior distributions can be computed thanks to:
+
+```{r compute posteriors}
+
+post = posterior_mean(data)
+
+post
+
+```
+
+When considering Peptides independently (no inter-Peptides correlations), the method is unaffected by missing values and no imputation is necessary.  
+
+
+We can also consider correlations between Peptides by using a multivariate version of the method. In this context, missing values need to be imputed beforehand (multiple imputations is accepted), and the dedicated function is:
+
+```{r compute posteriors multi}
+post_imp = multi_posterior_mean(data_imp)
+
+post_imp
+```
+
+Once parameters of the posterior distributions are available. We can sample from those distributions and visualise the differences between any groups for each peptide by using: 
+
+```{r visualisation}
+
+sample = sample_distrib(post)
+
+plot_distrib(sample, group1 = 1, group2 = 2, peptide = 'Peptide_1' )
+
+```
+
+When comparing a large number of Peptides simultaneously, the function `identify_diff()` can be used to check for probable differences between groups 
+for each Peptide:
+
+```{r identify differences}
+identify_diff(post)
+
+```
+

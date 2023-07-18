@@ -1,0 +1,5 @@
+url: https://mariechion.github.io/ProteoBayes/
+template:
+  bootstrap: 5
+  bootswatch: minty
+
