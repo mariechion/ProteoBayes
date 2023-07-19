@@ -28,9 +28,16 @@ You can install the development version of ProteoBayes like so:
 devtools::install_github("mariechion/ProteoBayes")
 ```
 
+If you want to use ProteoBayes without coding a single line, feel free
+use our dedicated web app:
+<https://arthurleroy.shinyapps.io/ProteoBayes/>.
+
+For those who are keen to learn more about the R code behind, just
+scroll down below!
+
 ## ProteoBayes in a nutshell
 
-Generate a synthetic proteomic dataset with the correct format:
+Generate a synthetic proteomics dataset with the correct format:
 
 ``` r
 library(ProteoBayes)

@@ -26,7 +26,7 @@ Bayesian toolbox for quantitative proteomics. In particular, this package provid
 
 You can install the released version of ProteoBayes from CRAN with:
 
-```{r eval = FALSE}
+```{r eval= FALSE, message=FALSE, warning=FALSE}
 install.packages("ProteoBayes")
 ```
 
@@ -37,10 +37,13 @@ You can install the development version of ProteoBayes like so:
 devtools::install_github("mariechion/ProteoBayes")
 ```
 
+If you want to use ProteoBayes without coding a single line, feel free use our dedicated web app: https://arthurleroy.shinyapps.io/ProteoBayes/.
+
+For those who are keen to learn more about the R code behind, just scroll down below! 
 
 ## ProteoBayes in a nutshell
 
-Generate a synthetic proteomic dataset with the correct format:
+Generate a synthetic proteomics dataset with the correct format:
 
 ```{r simu data}
 library(ProteoBayes)
