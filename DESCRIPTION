@@ -10,7 +10,8 @@ Authors@R:
         comment = c(ORCID = "0000-0001-8956-8388")))
 Description: Bayesian toolbox for quantitative proteomics. In particular, this 
     package provides functions to generate synthetic datasets, execute Bayesian
-    differential analysis methods, and display results.
+    differential analysis methods, and display results as, described in the 
+    associated article Marie Chion and Arthur Leroy (2023) <arXiv:2307.08975>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
