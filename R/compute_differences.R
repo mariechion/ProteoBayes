@@ -12,7 +12,7 @@
 #'     peptide.
 #' @param CI_level A number, defining the order of quantile chosen to assess
 #'     differences between groups.
-#' @param nb_samples A number (optional), indicating the
+#' @param nb_sample A number (optional), indicating the
 #'     number of samples to draw from the posteriors for computing mean and
 #'     credible intervals . Only used if \code{posterior} is multivariate,
 #'     typically coming from a \code{multi_posterior_mean()} function.
@@ -25,13 +25,13 @@
 identify_diff <- function(
     posterior,
     CI_level = 0.05,
-    nb_samples = 1000){
+    nb_sample = 1000){
 
   ## We could think of defining a multivariate criterion for differences
 
   if('Sigma' %in% names(posterior)){
     db_diff <- posterior %>%
-      sample_distrib(10) %>%
+      sample_distrib(nb_sample = nb_sample) %>%
       dplyr::group_by(.data$Peptide, .data$Group) %>%
       dplyr::reframe('mu' = mean(.data$Sample),
                      'CI_inf' = stats::quantile(.data$Sample, CI_level/2),
