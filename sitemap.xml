@@ -1,48 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/404.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/identify_diff.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/multi_posterior_mean.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/plot_distrib.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/posterior_mean.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/sample_distrib.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/simu_db.html</loc>
-  </url>
-  <url>
-    <loc>https://mariechion.github.io/ProteoBayes/reference/vectorised_multi.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://mariechion.github.io/ProteoBayes/404.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/LICENSE-text.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/LICENSE.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/authors.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/index.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/news/index.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/identify_diff.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/index.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/multi_posterior_mean.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/pipe.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/plot_distrib.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/posterior_mean.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/sample_distrib.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/simu_db.html</loc></url>
+<url><loc>https://mariechion.github.io/ProteoBayes/reference/vectorised_multi.html</loc></url>
 </urlset>
+
