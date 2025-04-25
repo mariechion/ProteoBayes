@@ -75,3 +75,34 @@ identify_diff <- function(
 
 }
 
+#' Identify posterior of multivariate mean differences
+#'
+#' Compute a multivariate inference criterion to examine whether the posterior
+#' multivariate t-distributions of groups should be considered different enough
+#' to be called 'differential'. Two groups are considered can be discriminated
+#' based on the probability weights for the element-wise means to be greater in
+#' each group. The Credible Intervals for each marginals are also provided.
+#'
+#' @param posterior A tibble, typically coming from a \code{posterior_mean()}
+#'     function, containing the parameters of the multivariate posterior
+#'     t-distributions for the mean of the considered groups and draws for each
+#'     peptide.
+#' @param CI_level A number, defining the order of quantile chosen to assess
+#'     differences between groups.
+#' @param nb_sample A number (optional), indicating the
+#'     number of samples to draw from the posteriors for computing mean and
+#'     credible intervals . Only used if \code{posterior} is multivariate,
+#'     typically coming from a \code{multi_posterior_mean()} function.
+#'
+#' @return A tibble, indicating which peptides and groups seem to be different
+#' @export
+#'
+#' @examples
+#' TRUE
+multi_identify_diff <- function(
+    posterior,
+    CI_level = 0.05,
+    nb_sample = 1000){
+
+
+}

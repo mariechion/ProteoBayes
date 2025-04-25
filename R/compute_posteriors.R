@@ -357,8 +357,8 @@ sample_distrib = function(posterior, nb_sample = 1000){
     ## Throw an error if nu < P - 1
     if(min(posterior$nu) < P - 1){
       stop("The 'nu' parameter is too small compared to the number of Peptides",
-      " (nu < P - 1). Consider changing prior value for 'nu' or decreasing",
-      " the number of Peptides.")
+      " (nu < P - 1). Consider increasing the prior value for 'nu' or ",
+      " decreasing the number of Peptides.")
     }
 
     dist = posterior %>%
