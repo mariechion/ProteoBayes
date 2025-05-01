@@ -75,7 +75,7 @@ identify_diff <- function(
 
 }
 
-#' Identify posterior of multivariate mean differences
+#' Identify differences in multivariate posteriors
 #'
 #' Compute a multivariate inference criterion to examine whether the posterior
 #' multivariate t-distributions of groups should be considered different enough
@@ -93,16 +93,67 @@ identify_diff <- function(
 #'     number of samples to draw from the posteriors for computing mean and
 #'     credible intervals . Only used if \code{posterior} is multivariate,
 #'     typically coming from a \code{multi_posterior_mean()} function.
+#' @param posterior A tibble, typically coming from a \code{posterior_mean()}
+#'     function, containing the parameters of the multivariate posterior
+#'     t-distributions for the mean of the considered groups and draws for each
+#'     peptide.
+#' @param CI_level A number, defining the order of quantile chosen to assess
+#'     differences between groups.
+#' @param nb_sample A number (optional), indicating the
+#'     number of samples to draw from the posteriors for computing mean and
+#'     credible intervals . Only used if \code{posterior} is multivariate,
+#'     typically coming from a \code{multi_posterior_mean()} function.
+#' @param plot
+#' @param nb_sample
+#' @param nb_sample_per_dim
 #'
 #' @return A tibble, indicating which peptides and groups seem to be different
 #' @export
 #'
 #' @examples
-#' TRUE
 multi_identify_diff <- function(
     posterior,
+    plot = TRUE,
     CI_level = 0.05,
-    nb_sample = 1000){
+    nb_sample = 1000,
+    nb_sample_per_dim = NULL){
 
+  ## Extract the dimension
+  P = posterior$Peptide %>% unique() %>% length()
 
+  ## Throw an error if nu < P - 1
+  if(min(posterior$nu) < P - 1){
+    stop("The 'nu' parameter is too small compared to the number of Peptides",
+         " (nu < P - 1). Consider changing prior value for 'nu' or decreasing",
+         " the number of Peptides.")
+  }
+
+  for(i in unique(Draw)){
+    for(j in unique(Group)){
+
+      dist = posterior %>%
+        dplyr::mutate(
+          'df' = .data$nu - P + 1,
+          'Sigma' = .data$Sigma / (.data$lambda * .data$df) ) %>%
+        dplyr::group_by(.data$Draw, .data$Group) %>%
+        dplyr::reframe(
+          mvtnorm::rmvt(
+            n = nb_sample,
+            sigma = matrix(.data$Sigma, ncol = P, nrow = P),
+            df = unique(.data$df),
+            delta = unique(.data$mu)
+          )
+        ) %>%
+        sign()
+        (`+`)(1) %>%
+        (`/`)(2) %>%
+        rowSums() %>%
+        as_tibble() %>%
+        count(value) %>%
+        mutate(n = n/nb_sample) %>%
+        arrange(value)
+    }
+  }
+   %>%
+    return()
 }
