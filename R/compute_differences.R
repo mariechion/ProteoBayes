@@ -27,8 +27,6 @@ identify_diff <- function(
     CI_level = 0.05,
     nb_sample = 1000){
 
-  ## We could think of defining a multivariate criterion for differences
-
   if('Sigma' %in% names(posterior)){
     db_diff <- posterior %>%
       sample_distrib(nb_sample = nb_sample) %>%
@@ -103,23 +101,33 @@ identify_diff <- function(
 #'     number of samples to draw from the posteriors for computing mean and
 #'     credible intervals . Only used if \code{posterior} is multivariate,
 #'     typically coming from a \code{multi_posterior_mean()} function.
-#' @param plot
-#' @param nb_sample
+#' @param plot A boolean, indicating whether a results plot should be displayed.
+#' @param cumulative A boolean, indicating whether the probability distribution
+#'     should be the cumulative instead.
+#' @param nb_sample A number of samples to draw from the empirical distributions
 #' @param nb_sample_per_dim
 #'
-#' @return A tibble, indicating which peptides and groups seem to be different
+#' @return A tibble, indicating the probability distribution for the number of
+#'     differentiable peptides for all one-by-one group comparisons
 #' @export
 #'
 #' @examples
 multi_identify_diff <- function(
     posterior,
     plot = TRUE,
+    cumulative = FALSE,
     CI_level = 0.05,
-    nb_sample = 1000,
+    nb_sample = 10000,
     nb_sample_per_dim = NULL){
 
-  ## Extract the dimension
+  ## Get the dimension
   P = posterior$Peptide %>% unique() %>% length()
+
+  ## Get the number of imputed datasets (Draws)
+  nb_draw = posterior$Draw %>% unique() %>% length()
+
+  ## Get the list of Groups
+  list_groups = posterior$Group %>% unique()
 
   ## Throw an error if nu < P - 1
   if(min(posterior$nu) < P - 1){
@@ -128,32 +136,93 @@ multi_identify_diff <- function(
          " the number of Peptides.")
   }
 
-  for(i in unique(Draw)){
-    for(j in unique(Group)){
+  ## Initialise the list of samples for all groups
+  samples = list()
 
-      dist = posterior %>%
-        dplyr::mutate(
-          'df' = .data$nu - P + 1,
-          'Sigma' = .data$Sigma / (.data$lambda * .data$df) ) %>%
-        dplyr::group_by(.data$Draw, .data$Group) %>%
-        dplyr::reframe(
-          mvtnorm::rmvt(
-            n = nb_sample,
-            sigma = matrix(.data$Sigma, ncol = P, nrow = P),
-            df = unique(.data$df),
-            delta = unique(.data$mu)
-          )
-        ) %>%
-        sign()
-        (`+`)(1) %>%
-        (`/`)(2) %>%
-        rowSums() %>%
-        as_tibble() %>%
-        count(value) %>%
-        mutate(n = n/nb_sample) %>%
-        arrange(value)
+  ## Loop over all groups to generate samples
+  for(i in list_groups){
+
+    ## Initialise the object that will average samples of all imputation draws
+    samples_draw = 0
+
+    ## Loop over all imputed datasets to generate samples
+    for(j in unique(posterior$Draw)){
+
+      ## Extract the posterior parameters of one group
+      db_group = posterior %>%
+        dplyr::filter(Group == i) %>%
+        dplyr::filter(Draw == j)
+
+      ## Compute the posterior degrees of freedom of the multi t-distribution
+      df = unique(db_group$nu) - P + 1
+
+      ## Get the posterior scaling parameter lambda
+      lambda = unique(db_group$lambda)
+
+      ## Compute the posterior covariance matrix of the multi t-distribution
+      Sigma = matrix(db_group$Sigma, nrow = P, ncol = P)
+
+      ## Get the posterior mean vector of the multivariate t-distribution
+      mu = unique(db_group$mu)
+
+      ## Average samples across all imputed datasets
+      samples_draw = samples_draw +
+        (1/nb_draw) * mvtnorm::rmvt(n=nb_sample, sigma=Sigma, df=df, delta=mu)
+    }
+    samples[[i]] = samples_draw
+  }
+
+  ## Initialise the tibble of results for each one-by-one group comparison
+  res = tibble::tibble()
+
+  ## Initialise the list of remaining groups to avoid duplicated comparisons
+  list_remaining_groups = list_groups
+
+  ## Loop over all one-by-one group comparisons
+  for(i in list_groups){
+
+    ## Remove current group1 from the list of group2
+    list_remaining_groups = list_remaining_groups[-1]
+
+    for(j in list_remaining_groups){
+
+      ## Compute the difference between group1 and group2 for each sample
+      diff_samples = samples[[i]] - samples[[j]]
+
+      res = res %>%
+        dplyr::bind_rows(
+          diff_samples %>%
+            sign() %>%
+            (`+`)(1) %>%
+            (`/`)(2) %>%
+            rowSums() %>%
+            tibble::as_tibble() %>%
+            dplyr::count(value) %>%
+            dplyr::mutate(n = n/nb_sample) %>%
+            dplyr::arrange(value) %>%
+            dplyr::rename('Nb_peptides' = value, 'Proba' = n) %>%
+            tidyr::complete('Nb_peptides'= tidyr::full_seq(0:P, 1),
+                            fill= list('Proba' = 0)) %>%
+            dplyr::arrange(Nb_peptides) %>%
+            dplyr::mutate('Group1' = i) %>%
+            dplyr::mutate('Group2' = j)
+        )
     }
   }
-   %>%
+
+  ## Return the cumulative probability distribution if requested
+  if(cumulative){
+  res = res %>%
+    dplyr::group_by(Group1, Group2) %>%
+    dplyr::mutate(Proba = cumsum(Proba)) %>%
+    dplyr::rename('Cumul_proba' = Proba)
+  }
+
+  ## Display a plot if requested
+  if(plot){
+    plot_multi_diff(res, cumulative = cumulative)
+  }
+
+  res %>%
     return()
 }

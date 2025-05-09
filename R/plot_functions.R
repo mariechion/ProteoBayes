@@ -167,3 +167,114 @@ plot_distrib = function(
     }
   return(gg)
 }
+
+#' Plot multivariate comparison between groups
+#'
+#' Graphical representation of inference in a multivariate difference
+#' analysis context. The plotted empirical distribution represents, for each
+#' one-to-one group comparison, the probability of the number of elements for
+#' which the mean of a peptide is larger in a given group. This provides visual
+#' evidence on whether two groups are differential or not, with adequate
+#' uncertainty quantification.
+#'
+#' @param proba_diff A tibble, typically coming from the
+#'    \code{multi_identify_diff} function, containing probability distribution
+#'    of the number of larger peptides in each one-to-one group comparisons.
+#'
+#'
+#' @returns A graph (or a matrix of graphs) displaying the multivariate
+#'      differential inference summary between groups
+#' @export
+#'
+#' @examples
+#' TRUE
+plot_multi_diff = function(
+  proba_diff,
+  cumulative = FALSE
+  ){
+
+# browser()
+  ## Initialise the list of graphs to be plotted
+  gg = list()
+
+  ## Initialise a counter for the number of graphs
+  counter = 0
+
+  ## Get the list of Groups
+  list_groups = proba_diff$Group1 %>%
+    union(proba_diff$Group2) %>%
+    unique()
+
+  ## Initialise the layout matrix for fisplaying multiple graphs
+  layout_matrix = matrix(NA,
+                         nrow=length(list_groups),
+                         ncol=length(list_groups)-1
+                         )
+
+  ## Initialise the list of remaining groups to avoid duplicated comparisons
+  list_remaining_groups = list_groups
+
+  ## Loop over all one-by-one group comparisons
+  for(i in list_groups){
+
+    ## Remove current group1 from the list of group2
+    list_remaining_groups = list_remaining_groups[-1]
+
+    for(j in list_remaining_groups){
+      db_plot = proba_diff %>% dplyr::filter(Group1 == i, Group2 == j)
+
+      ## Increment the counter and position it in the layout matrix
+      counter = counter + 1
+      layout_matrix[i,j-1] = counter
+
+      ## Get the index of Group1 for the legend
+      index_group1 = db_plot %>%
+        dplyr::pull(Group1) %>%
+        unique() %>%
+        as.character()
+
+      ## Get the index of Group2 for the legend
+      index_group2 = db_plot %>%
+        dplyr::pull(Group2) %>%
+        unique() %>%
+        as.character()
+
+      ## Get the list of number of peptides for the x-axis
+      nb_peptides = db_plot$Nb_peptides
+
+      ## Display whether the probability distribution or its cumulative
+      if('Proba' %in% names(db_plot)){
+        gg[[counter]] = ggplot2::ggplot(db_plot) +
+          ggplot2::geom_bar(
+            ggplot2::aes(x = Nb_peptides, y = Proba),
+            stat = 'identity',
+            fill = '#AFC0E3'
+          ) +
+          ggplot2::geom_vline(ggplot2::aes(xintercept = max(nb_peptides)/2),
+                              color = 'red',
+                              linetype = 'dashed') +
+          ggplot2::theme_classic() +
+          ggplot2::xlab(
+            bquote( paste('Number of elements i where ',
+                          mu[.(index_group1)]^i > mu[.(index_group2)]^i))) +
+          ggplot2::ylab(bquote(Probability)) +
+          ggplot2::xlim(c(min(nb_peptides)-0.5, max(nb_peptides)+0.5))
+
+      } else {
+        gg[[counter]] = ggplot2::ggplot(db_plot) +
+          ggplot2::geom_line(
+            ggplot2::aes(x = Nb_peptides, y = Cumul_proba),
+            col = '#AFC0E3') +
+          ggplot2::theme_classic() +
+          ggplot2::xlab(
+            bquote(paste('Number of elements i where ',
+                         mu[.(index_group1)]^i > mu[.(index_group2)]^i))) +
+          ggplot2::ylab(bquote('Cumulative probability')) +
+          ggplot2::xlim(c(min(nb_peptides), max(nb_peptides)))
+      }
+    }
+  }
+
+  gridExtra::grid.arrange(grobs=gg, layout_matrix = layout_matrix) %>%
+    return()
+}
