@@ -49,7 +49,12 @@ posterior t-distributions do not overlap.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">identify_diff</span><span class="op">(</span><span class="va">posterior</span>, CI_level <span class="op">=</span> <span class="fl">0.05</span>, nb_sample <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">identify_diff</span><span class="op">(</span></span>
+<span>  <span class="va">posterior</span>,</span>
+<span>  CI_level <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  nb_sample <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  separate_groups <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -74,6 +79,11 @@ number of samples to draw from the posteriors for computing mean and
 credible intervals . Only used if <code>posterior</code> is multivariate,
 typically coming from a <code><a href="multi_posterior_mean.html">multi_posterior_mean()</a></code> function.</p></dd>
 
+
+<dt id="arg-separate-groups">separate_groups<a class="anchor" aria-label="anchor" href="#arg-separate-groups"></a></dt>
+<dd><p>A boolean, indicating whether the distributions of
+groups should be presented separately or directly as a difference.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -95,7 +105,7 @@ typically coming from a <code><a href="multi_posterior_mean.html">multi_posterio
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>

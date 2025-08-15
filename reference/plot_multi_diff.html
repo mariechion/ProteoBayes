@@ -52,17 +52,28 @@ uncertainty quantification.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_multi_diff</span><span class="op">(</span><span class="va">proba_diff</span>, cumulative <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_multi_diff</span><span class="op">(</span><span class="va">multi_diff</span>, plot_mean <span class="op">=</span> <span class="cn">TRUE</span>, cumulative <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-proba-diff">proba_diff<a class="anchor" aria-label="anchor" href="#arg-proba-diff"></a></dt>
+<dl><dt id="arg-multi-diff">multi_diff<a class="anchor" aria-label="anchor" href="#arg-multi-diff"></a></dt>
 <dd><p>A tibble, typically coming from the
 <code>multi_identify_diff</code> function, containing probability distribution
-of the number of larger peptides in each one-to-one group comparisons.</p></dd>
+(or the cumulative distribution) of the number of larger Peptides in each
+one-to-one group comparisons.</p></dd>
+
+
+<dt id="arg-plot-mean">plot_mean<a class="anchor" aria-label="anchor" href="#arg-plot-mean"></a></dt>
+<dd><p>A boolean, indicating whether the graph for difference of
+means between all groups for each Peptide should be displayed.</p></dd>
+
+
+<dt id="arg-cumulative">cumulative<a class="anchor" aria-label="anchor" href="#arg-cumulative"></a></dt>
+<dd><p>A boolean, indicating whether the cumulative distribution
+or the original probability distribution should be displayed.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -86,7 +97,7 @@ differential inference summary between groups</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>
