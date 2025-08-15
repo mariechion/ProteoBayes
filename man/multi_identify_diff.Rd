@@ -7,10 +7,10 @@
 multi_identify_diff(
   posterior,
   plot = TRUE,
+  overlap_coef = TRUE,
   cumulative = FALSE,
-  CI_level = 0.05,
-  nb_sample = 10000,
-  nb_sample_per_dim = NULL
+  nb_sample = 1e+05,
+  nb_sample_overlap = 10000
 )
 }
 \arguments{
@@ -21,19 +21,28 @@ peptide.}
 
 \item{plot}{A boolean, indicating whether a results plot should be displayed.}
 
+\item{overlap_coef}{A boolean, indicating whether the overlapping coefficient
+between multivariate t-distributions should be computed for all groups.}
+
 \item{cumulative}{A boolean, indicating whether the probability distribution
 should be the cumulative instead.}
 
-\item{CI_level}{A number, defining the order of quantile chosen to assess
-differences between groups.}
-
 \item{nb_sample}{A number of samples to draw from the empirical distributions}
 
-\item{nb_sample_per_dim}{}
+\item{nb_sample_overlap}{A number of samples to draw for the Monte Carlo
+approximation of the Overlapping Coefficients between all posteriors.}
 }
 \value{
-A tibble, indicating the probability distribution for the number of
-differentiable peptides for all one-by-one group comparisons
+A list, containing:
+\itemize{
+\item Diff_mean, a tibble containing the posterior mean (and their difference)
+for each peptide and for all one-by-one group comparisons.
+\item Diff_proba, a tibble containing the probability distribution of the
+number of differential peptides for all one-by-one group comparisons.
+\item Overlap_coef, a tibble containing the overlapping coefficient between
+the posterior multivariate t-distributions for all one-by-one group
+comparisons.
+}
 }
 \description{
 Compute a multivariate inference criterion to examine whether the posterior

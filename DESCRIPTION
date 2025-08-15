@@ -25,7 +25,8 @@ Imports:
     tidyr,
     rlang,
     extraDistr,
-    gridExtra
+    gridExtra,
+    LaplacesDemon
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -177,10 +177,15 @@ plot_distrib = function(
 #' evidence on whether two groups are differential or not, with adequate
 #' uncertainty quantification.
 #'
-#' @param proba_diff A tibble, typically coming from the
+#' @param multi_diff A tibble, typically coming from the
 #'    \code{multi_identify_diff} function, containing probability distribution
-#'    of the number of larger peptides in each one-to-one group comparisons.
+#'    (or the cumulative distribution) of the number of larger Peptides in each
+#'     one-to-one group comparisons.
 #'
+#' @param cumulative A boolean, indicating whether the cumulative distribution
+#'    or the original probability distribution should be displayed.
+#' @param plot_mean A boolean, indicating whether the graph for difference of
+#'    means between all groups for each Peptide should be displayed.
 #'
 #' @returns A graph (or a matrix of graphs) displaying the multivariate
 #'      differential inference summary between groups
@@ -189,11 +194,14 @@ plot_distrib = function(
 #' @examples
 #' TRUE
 plot_multi_diff = function(
-  proba_diff,
+  multi_diff,
+  plot_mean = TRUE,
   cumulative = FALSE
   ){
 
-# browser()
+  proba_diff = multi_diff$Diff_proba
+  mean_diff = multi_diff$Diff_mean
+
   ## Initialise the list of graphs to be plotted
   gg = list()
 
@@ -205,9 +213,9 @@ plot_multi_diff = function(
     union(proba_diff$Group2) %>%
     unique()
 
-  ## Initialise the layout matrix for fisplaying multiple graphs
+  ## Initialise the layout matrix for displaying multiple graphs
   layout_matrix = matrix(NA,
-                         nrow=length(list_groups),
+                         nrow=length(list_groups)-1,
                          ncol=length(list_groups)-1
                          )
 
@@ -221,7 +229,8 @@ plot_multi_diff = function(
     list_remaining_groups = list_remaining_groups[-1]
 
     for(j in list_remaining_groups){
-      db_plot = proba_diff %>% dplyr::filter(Group1 == i, Group2 == j)
+      db_plot = proba_diff %>%
+        dplyr::filter(.data$Group1 == i, .data$Group2 == j)
 
       ## Increment the counter and position it in the layout matrix
       counter = counter + 1
@@ -229,13 +238,13 @@ plot_multi_diff = function(
 
       ## Get the index of Group1 for the legend
       index_group1 = db_plot %>%
-        dplyr::pull(Group1) %>%
+        dplyr::pull(.data$Group1) %>%
         unique() %>%
         as.character()
 
       ## Get the index of Group2 for the legend
       index_group2 = db_plot %>%
-        dplyr::pull(Group2) %>%
+        dplyr::pull(.data$Group2) %>%
         unique() %>%
         as.character()
 
@@ -246,7 +255,7 @@ plot_multi_diff = function(
       if('Proba' %in% names(db_plot)){
         gg[[counter]] = ggplot2::ggplot(db_plot) +
           ggplot2::geom_bar(
-            ggplot2::aes(x = Nb_peptides, y = Proba),
+            ggplot2::aes(x = .data$Nb_peptides, y = .data$Proba),
             stat = 'identity',
             fill = '#AFC0E3'
           ) +
@@ -255,7 +264,7 @@ plot_multi_diff = function(
                               linetype = 'dashed') +
           ggplot2::theme_classic() +
           ggplot2::xlab(
-            bquote( paste('Number of elements i where ',
+            bquote( paste('Number of peptides i where ',
                           mu[.(index_group1)]^i > mu[.(index_group2)]^i))) +
           ggplot2::ylab(bquote(Probability)) +
           ggplot2::xlim(c(min(nb_peptides)-0.5, max(nb_peptides)+0.5))
@@ -263,16 +272,43 @@ plot_multi_diff = function(
       } else {
         gg[[counter]] = ggplot2::ggplot(db_plot) +
           ggplot2::geom_line(
-            ggplot2::aes(x = Nb_peptides, y = Cumul_proba),
+            ggplot2::aes(x = .data$Nb_peptides, y = .data$Cumul_proba),
             col = '#AFC0E3') +
           ggplot2::theme_classic() +
           ggplot2::xlab(
-            bquote(paste('Number of elements i where ',
+            bquote(paste('Number of peptides i where ',
                          mu[.(index_group1)]^i > mu[.(index_group2)]^i))) +
           ggplot2::ylab(bquote('Cumulative probability')) +
           ggplot2::xlim(c(min(nb_peptides), max(nb_peptides)))
       }
+      ## Add overlapping coefficient in title if provided in 'multi_diff'
+      if('Overlap_coef' %in% names(multi_diff)){
+
+        coef = multi_diff$Overlap_coef %>%
+          dplyr::filter(.data$Group1 == i, .data$Group2 == j) %>%
+          dplyr::pull(.data$Overlap_coef)
+
+        gg[[counter]] = gg[[counter]] +
+          ggtitle(bquote(paste('Overlapping coefficient:', .(coef))))
+      }
     }
+  }
+
+  if(plot_mean){
+
+    if(length(list_groups) == 2){
+     layout_matrix = as.matrix(c(1,2))
+    } else{
+     layout_matrix[length(list_groups)-1, 1] = counter+1
+    }
+
+    gg[[counter+1]] = ggplot2::ggplot(mean_diff) +
+      ggplot2::geom_point(ggplot2::aes(x = .data$Mean,
+                                       y = .data$Peptide,
+                                       col = factor(.data$Group))) +
+      ggplot2::xlab(bquote('Posterior Mean')) +
+      ggplot2::theme_classic() +
+      ggplot2::scale_colour_discrete(name = "Group")
   }
 
   gridExtra::grid.arrange(grobs=gg, layout_matrix = layout_matrix) %>%

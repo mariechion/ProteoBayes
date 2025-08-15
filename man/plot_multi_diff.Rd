@@ -4,12 +4,19 @@
 \alias{plot_multi_diff}
 \title{Plot multivariate comparison between groups}
 \usage{
-plot_multi_diff(proba_diff, cumulative = FALSE)
+plot_multi_diff(multi_diff, plot_mean = TRUE, cumulative = FALSE)
 }
 \arguments{
-\item{proba_diff}{A tibble, typically coming from the
+\item{multi_diff}{A tibble, typically coming from the
 \code{multi_identify_diff} function, containing probability distribution
-of the number of larger peptides in each one-to-one group comparisons.}
+(or the cumulative distribution) of the number of larger Peptides in each
+one-to-one group comparisons.}
+
+\item{plot_mean}{A boolean, indicating whether the graph for difference of
+means between all groups for each Peptide should be displayed.}
+
+\item{cumulative}{A boolean, indicating whether the cumulative distribution
+or the original probability distribution should be displayed.}
 }
 \value{
 A graph (or a matrix of graphs) displaying the multivariate
