@@ -40,7 +40,7 @@ multi_posterior_mean = function(
 
   ## Remove missing data if present
   data = data %>%
-    drop_na()
+    tidyr::drop_na()
 
   ## Initialise prior mean \mu_0 with empirical mean across all groups
   if(mu_0 %>% is.null()){
@@ -201,7 +201,7 @@ vectorised_multi = function(
 
   ## Remove missing data if present
   data = data %>%
-    drop_na()
+    tidyr::drop_na()
 
   ## Initialise prior mean \mu_0 with empirical mean across all groups
   if(mu_0 %>% is.null()){
@@ -304,7 +304,7 @@ posterior_mean = function(
 
   ## Remove missing data if present
   data = data %>%
-    drop_na()
+    tidyr::drop_na()
 
   ## Initialise prior mean \mu_0 with empirical mean across all groups
   if(mu_0 %>% is.null()){
