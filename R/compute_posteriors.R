@@ -37,6 +37,11 @@ multi_posterior_mean = function(
     nu_0 = 10,
     vectorised = FALSE
 ){
+
+  ## Remove missing data if present
+  data = data %>%
+    drop_na()
+
   ## Initialise prior mean \mu_0 with empirical mean across all groups
   if(mu_0 %>% is.null()){
     data <- data %>%
@@ -194,6 +199,10 @@ vectorised_multi = function(
     nu_0 = 10
 ){
 
+  ## Remove missing data if present
+  data = data %>%
+    drop_na()
+
   ## Initialise prior mean \mu_0 with empirical mean across all groups
   if(mu_0 %>% is.null()){
     data <- data %>%
@@ -292,6 +301,10 @@ posterior_mean = function(
     beta_0 = 1,
     alpha_0 = 1
 ){
+
+  ## Remove missing data if present
+  data = data %>%
+    drop_na()
 
   ## Initialise prior mean \mu_0 with empirical mean across all groups
   if(mu_0 %>% is.null()){
