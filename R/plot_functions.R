@@ -289,7 +289,7 @@ plot_multi_diff = function(
           dplyr::pull(.data$Overlap_coef)
 
         gg[[counter]] = gg[[counter]] +
-          ggtitle(bquote(paste('Overlapping coefficient:', .(coef))))
+          ggplot2::ggtitle(bquote(paste('Overlapping coefficient:', .(coef))))
       }
     }
   }
