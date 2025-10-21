@@ -151,7 +151,7 @@ multi_identify_diff <- function(
   nb_draw = posterior$Draw %>% unique() %>% length()
 
   ## Get the list of Groups
-  list_groups = posterior$Group %>% unique()
+  list_groups = posterior$Group %>% unique() %>% as.character()
 
   ## Throw an error if nu < P - 1
   if(min(posterior$nu) < P - 1){
