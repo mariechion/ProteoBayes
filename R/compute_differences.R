@@ -128,7 +128,7 @@ multi_identify_diff <- function(
   averaged_mean = posterior %>%
     dplyr::select(.data$Draw, .data$Group, .data$Peptide, .data$mu) %>%
     dplyr::group_by(.data$Group, .data$Peptide) %>%
-    dplyr::summarise(mu = mean(.data$mu))
+    dplyr::summarise(mu = mean(.data$mu), .groups = 'drop')
 
   ## Compute the difference between means of all Groups
   diff_mean = averaged_mean %>%
