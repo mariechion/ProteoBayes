@@ -219,22 +219,35 @@ plot_multi_diff = function(
                          ncol=length(list_groups)-1
                          )
 
+  
+  ## Initialise the x-layout position
+  layout_x = 0
+  
   ## Initialise the list of remaining groups to avoid duplicated comparisons
   list_remaining_groups = list_groups
 
   ## Loop over all one-by-one group comparisons
   for(i in list_groups){
 
+    ## Increment the x-layout position
+    layout_x = layout_x + 1
+    ## Reset the y-layout position
+    layout_y = layout_x - 1
+
     ## Remove current group1 from the list of group2
     list_remaining_groups = list_remaining_groups[-1]
 
     for(j in list_remaining_groups){
+
+      ## Increment the y-layout position
+      layout_y = layout_y + 1
+
       db_plot = proba_diff %>%
         dplyr::filter(.data$Group1 == i, .data$Group2 == j)
 
       ## Increment the counter and position it in the layout matrix
       counter = counter + 1
-      layout_matrix[i,j-1] = counter
+      layout_matrix[layout_x, layout_y] = counter
 
       ## Get the index of Group1 for the legend
       index_group1 = db_plot %>%
