@@ -10,6 +10,7 @@
 ## Minor
 
 * Fix an issue with the 'nb_sample' argument in identify_diff()
+* Fix an implementation issue with the mixture of T-distribution in the case of multiple Draws
 
 # ProteoBayes 1.0.0
 

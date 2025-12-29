@@ -20,7 +20,7 @@ identify_diff <- function(posterior){
     db_diff <- posterior %>%
       dplyr::rename('mean' = .data$mu) %>%
       dplyr::mutate('var' = sqrt(.data$beta / (.data$lambda * .data$alpha)),
-                    'df' =  2 * .data$alpha) %>% 
+                    'df' =  2 * .data$alpha) %>%
       dplyr::select(- c(.data$alpha, .data$beta, .data$lambda))
 
     db_diff %>%
@@ -32,8 +32,8 @@ identify_diff <- function(posterior){
                         'var2' = .data$var,
                         'df2' = .data$df),
         by = c("Peptide", 'Group2')) %>%
-      dplyr::filter(.data$Group != .data$Group2) %>% 
-      dplyr::mutate('Diff_mean' = .data$mean - .data$mean2, .before = 1) %>% 
+      dplyr::filter(.data$Group != .data$Group2) %>%
+      dplyr::mutate('Diff_mean' = .data$mean - .data$mean2, .before = 1) %>%
       dplyr::rowwise() %>%
       dplyr::mutate(
         'Proba_differential' = 1 - overlap_coef(
@@ -44,7 +44,7 @@ identify_diff <- function(posterior){
           df1 = .data$df,
           df2 = .data$df2,
           nb_sample = 1e4),
-       .before = 1) %>% 
+       .before = 1) %>%
     return()
 }
 
@@ -134,16 +134,15 @@ multi_identify_diff <- function(
   ## Loop over all groups to generate samples
   for(i in list_groups){
 
-    ## Initialise the object that will average samples of all imputation draws
-    samples_draw = 0
-
-    ## Loop over all imputed datasets to generate samples
-    for(j in unique(posterior$Draw)){
+      ## Uniformly pick an imputed dataset from the mixture
+      draw = posterior$Draw %>%
+        unique() %>%
+        sample(1)
 
       ## Extract the posterior parameters of one group
       db_group = posterior %>%
         dplyr::filter(.data$Group == i) %>%
-        dplyr::filter(.data$Draw == j)
+        dplyr::filter(.data$Draw == draw)
 
       ## Compute the posterior degrees of freedom of the multi t-distribution
       df = unique(db_group$nu) - P + 1
@@ -157,11 +156,7 @@ multi_identify_diff <- function(
       ## Get the posterior mean vector of the multivariate t-distribution
       mu = unique(db_group$mu)
 
-      ## Average samples across all imputed datasets
-      samples_draw = samples_draw +
-        (1/nb_draw) * mvtnorm::rmvt(n=nb_sample, sigma=Sigma, df=df, delta=mu)
-    }
-    samples[[i]] = samples_draw
+      samples[[i]] = mvtnorm::rmvt(n=nb_sample, sigma=Sigma, df=df, delta=mu)
   }
 
   ## Initialise the tibble of results for each one-by-one group comparison

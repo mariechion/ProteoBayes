@@ -394,8 +394,10 @@ sample_distrib = function(posterior, nb_sample = 1000){
                           names_to = 'Peptide',
                           values_to = 'Sample') %>%
       dplyr::group_by(.data$Peptide, .data$Group, .data$ID_sample) %>%
-      dplyr::reframe('Sample' = mean(.data$Sample)) %>%
-      dplyr::select(- .data$ID_sample)
+      dplyr::filter(.data$Draw == sample(unique(.data$Draw), 1) ) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(- c(.data$ID_sample, .data$Draw))
+
   }
 
   if('beta' %in% names(posterior)){
