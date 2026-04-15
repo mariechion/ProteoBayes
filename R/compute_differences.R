@@ -19,7 +19,7 @@
 identify_diff <- function(posterior){
     db_diff <- posterior %>%
       dplyr::rename('mean' = .data$mu) %>%
-      dplyr::mutate('var' = sqrt(.data$beta / (.data$lambda * .data$alpha)),
+      dplyr::mutate('var' = .data$beta / (.data$lambda * .data$alpha),
                     'df' =  2 * .data$alpha) %>%
       dplyr::select(- c(.data$alpha, .data$beta, .data$lambda))
 
