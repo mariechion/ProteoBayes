@@ -9,14 +9,14 @@
 
 ## Citation
 
-Leroy A, Chion M (2025). *ProteoBayes: Bayesian Statistical Tools for
+Leroy A, Chion M (2026). *ProteoBayes: Bayesian Statistical Tools for
 Quantitative Proteomics*. R package version 1.0.0,
 <https://mariechion.github.io/ProteoBayes/>.
 
     @Manual{,
       title = {ProteoBayes: Bayesian Statistical Tools for Quantitative Proteomics},
       author = {Arthur Leroy and Marie Chion},
-      year = {2025},
+      year = {2026},
       note = {R package version 1.0.0},
       url = {https://mariechion.github.io/ProteoBayes/},
     }
