@@ -39,11 +39,10 @@ identify_diff <- function(posterior){
         'Proba_differential' = 1 - overlap_coef(
           mean1 = .data$mean,
           mean2 = .data$mean2,
-          cov1 = .data$var,
-          cov2 = .data$var2,
+          var1 = .data$var,
+          var2 = .data$var2,
           df1 = .data$df,
-          df2 = .data$df2,
-          nb_sample = 1e4),
+          df2 = .data$df2),
        .before = 1) %>%
     return()
 }
@@ -231,7 +230,7 @@ multi_identify_diff <- function(
           tib_overlap = tibble::tibble(
             'Group1' = i,
             'Group2' = j,
-            'Overlap_coef' = overlap_coef(
+            'Overlap_coef' = multi_overlap_coef(
               mean1 = mean1,
               mean2 = mean2,
               cov1 = cov1,
@@ -328,7 +327,7 @@ multi_CI <- function(
 #'
 #' @examples
 #' TRUE
-overlap_coef <- function(
+multi_overlap_coef <- function(
     mean1,
     mean2,
     cov1,
@@ -372,3 +371,44 @@ overlap_coef <- function(
       return()
 }
 
+#' Overlapping coefficient between univariate t-distributions
+#'
+#' Compute a (high speed) quadrature approximation of the overlapping coefficient
+#' between two univariate t-distributions with arbitrary mean, covariance and
+#' degrees of freedom.
+#'
+#' @param mean1 A vector, the mean parameter of a t-distribution
+#' @param mean2 A vector, the mean parameter of the other t-distribution
+#' @param var1 A matrix, the variance parameter of a t-distribution
+#' @param var2 A matrix, the variance parameter of the other
+#'    t-distribution
+#' @param df1 A number, the degrees of freedom of a t-distribution
+#' @param df2 A number, the degrees of freedom of the other t-distribution
+#' @param nb_sample A number of samples drawn to compute the Monte Carlo estimation
+#'
+#' @returns A number, the Monte Carlo approximation of the overlapping
+#'    coefficient between the two univariate t-distributions.
+#' @export
+#'
+#' @examples
+#' TRUE
+overlap_coef <- function(
+    mean1,
+    mean2,
+    var1,
+    var2,
+    df1,
+    df2
+    ){
+  f <- function(x) {
+    p1 <- dt((x - mean1)/sqrt(diag(var1)), df1) / sqrt(diag(var1))
+    p2 <- dt((x - mean2)/sqrt(diag(var2)), df2) / sqrt(diag(var2))
+    pmin(p1, p2)
+  }
+  
+  # Truncated bounds (for performance)
+  lower <- min(mean1, mean2) - 10 * max(sqrt(diag(var1)), sqrt(diag(var2)))
+  upper <- max(mean1, mean2) + 10 * max(sqrt(diag(var1)), sqrt(diag(var2)))
+  
+  integrate(f, lower = lower, upper = upper)$value
+}

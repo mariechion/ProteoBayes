@@ -2,6 +2,7 @@
 
 ## Major
 
+* Add multi_overlap_coefficient() to compute a Monte Carlo approximation of the Overlapping Coefficient in high dimension
 * Add a new multi_identify_diff() function for multivariate differential analysis
 * Update the identify_diff() function to include overlap coefficient
 * Add the overlap_coefficient() function to calculate overlap coefficient between two sets

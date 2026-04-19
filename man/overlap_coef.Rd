@@ -2,33 +2,33 @@
 % Please edit documentation in R/compute_differences.R
 \name{overlap_coef}
 \alias{overlap_coef}
-\title{Overlapping coefficient between multivariate t-distributions}
+\title{Overlapping coefficient between univariate t-distributions}
 \usage{
-overlap_coef(mean1, mean2, cov1, cov2, df1, df2, nb_sample = 10000)
+overlap_coef(mean1, mean2, var1, var2, df1, df2)
 }
 \arguments{
-\item{mean1}{A vector, the mean parameter of a multi t-distribution}
+\item{mean1}{A vector, the mean parameter of a t-distribution}
 
-\item{mean2}{A vector, the mean parameter of the other multi t-distribution}
+\item{mean2}{A vector, the mean parameter of the other t-distribution}
 
-\item{cov1}{A matrix, the covariance parameter of a multi t-distribution}
+\item{var1}{A matrix, the variance parameter of a t-distribution}
 
-\item{cov2}{A matrix, the covariance parameter of the other multi
+\item{var2}{A matrix, the variance parameter of the other
 t-distribution}
 
-\item{df1}{A number, the degrees of freedom of a multi t-distribution}
+\item{df1}{A number, the degrees of freedom of a t-distribution}
 
-\item{df2}{A number, the degrees of freedom of the other multi t-distribution}
+\item{df2}{A number, the degrees of freedom of the other t-distribution}
 
 \item{nb_sample}{A number of samples drawn to compute the Monte Carlo estimation}
 }
 \value{
 A number, the Monte Carlo approximation of the overlapping
-coefficient between the two multivariate t-distributions.
+coefficient between the two univariate t-distributions.
 }
 \description{
-Compute a Monte Carlo approximation of the overlapping coefficient between
-two multivariate t-distributions with arbitrary mean, covariance and
+Compute a (high speed) quadrature approximation of the overlapping coefficient
+between two univariate t-distributions with arbitrary mean, covariance and
 degrees of freedom.
 }
 \examples{
