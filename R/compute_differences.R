@@ -363,8 +363,9 @@ overlap_coef <- function(
     # Compute the importance weights (log (min(f,g) / sampling weight) )
     log_weights <- pmin(logp, logq) - logr
 
-    # Compute exponential of the result back to the original scale
-    weights <- exp(log_weights)
+    # Compute exponential of the result back to the original scale with numerical stability (logsumexp)
+    max_logw <- max(log_weights)
+    weights <- exp(log_weights - max_logw) * exp(max_logw)
 
     # Final Monte Carlo estimate of the overlapping coefficient
     mean(weights) %>%
