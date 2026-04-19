@@ -10,13 +10,16 @@
 #'     function, containing the parameters of the multivariate posterior
 #'     t-distributions for the mean of the considered groups and draws for each
 #'     peptide.
+#' @param overlap_coef A boolean, indicating whether the overlapping coefficient
+#'     between the univariate t-distributions should be computed for all groups.
+
 #'
 #' @return A tibble, indicating which peptides and groups seem to be different
 #' @export
 #'
 #' @examples
 #' TRUE
-identify_diff <- function(posterior){
+identify_diff <- function(posterior, overlap_coef = TRUE){
     db_diff <- posterior %>%
       dplyr::rename('mean' = .data$mu) %>%
       dplyr::mutate('var' = .data$beta / (.data$lambda * .data$alpha),
