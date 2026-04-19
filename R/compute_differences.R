@@ -400,15 +400,18 @@ overlap_coef <- function(
     df1,
     df2
     ){
+  sd1 <- sqrt(var1)
+  sd2 <- sqrt(var2)
+
   f <- function(x) {
-    p1 <- dt((x - mean1)/sqrt(diag(var1)), df1) / sqrt(diag(var1))
-    p2 <- dt((x - mean2)/sqrt(diag(var2)), df2) / sqrt(diag(var2))
+    p1 <- dt((x - mean1)/sd1, df1) / sd1
+    p2 <- dt((x - mean2)/sd2, df2) / sd2
     pmin(p1, p2)
   }
   
   # Truncated bounds (for performance)
-  lower <- min(mean1, mean2) - 10 * max(sqrt(diag(var1)), sqrt(diag(var2)))
-  upper <- max(mean1, mean2) + 10 * max(sqrt(diag(var1)), sqrt(diag(var2)))
+  lower <- min(mean1, mean2) - 10 * max(sd1, sd2)
+  upper <- max(mean1, mean2) + 10 * max(sd1, sd2)
   
   integrate(f, lower = lower, upper = upper)$value
 }
