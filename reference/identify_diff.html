@@ -49,12 +49,7 @@ posterior t-distributions do not overlap.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">identify_diff</span><span class="op">(</span></span>
-<span>  <span class="va">posterior</span>,</span>
-<span>  CI_level <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>  nb_sample <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  separate_groups <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">identify_diff</span><span class="op">(</span><span class="va">posterior</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -66,23 +61,6 @@ posterior t-distributions do not overlap.</p>
 function, containing the parameters of the multivariate posterior
 t-distributions for the mean of the considered groups and draws for each
 peptide.</p></dd>
-
-
-<dt id="arg-ci-level">CI_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
-<dd><p>A number, defining the order of quantile chosen to assess
-differences between groups.</p></dd>
-
-
-<dt id="arg-nb-sample">nb_sample<a class="anchor" aria-label="anchor" href="#arg-nb-sample"></a></dt>
-<dd><p>A number (optional), indicating the
-number of samples to draw from the posteriors for computing mean and
-credible intervals . Only used if <code>posterior</code> is multivariate,
-typically coming from a <code><a href="multi_posterior_mean.html">multi_posterior_mean()</a></code> function.</p></dd>
-
-
-<dt id="arg-separate-groups">separate_groups<a class="anchor" aria-label="anchor" href="#arg-separate-groups"></a></dt>
-<dd><p>A boolean, indicating whether the distributions of
-groups should be presented separately or directly as a difference.</p></dd>
 
 </dl></div>
     <div class="section level2">
